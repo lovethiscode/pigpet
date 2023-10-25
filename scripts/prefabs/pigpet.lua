@@ -8,6 +8,8 @@ local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
+    inst.Transform:SetFourFaced()
+    
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
 
