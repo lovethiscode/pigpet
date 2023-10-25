@@ -15,12 +15,13 @@ local function fn()
 
     inst.AnimState:SetBank("pigman")
     inst.AnimState:SetBuild("pig_build")
-    inst.AnimState:PlayAnimation("pig_reject", true)
+    inst.AnimState:PlayAnimation("pig_reject")
 
     --可以移动
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = 3
 
+   
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(100)
 
@@ -35,6 +36,11 @@ local function fn()
     inst:AddComponent("follower")
     --物品栏，可以装备武器，防具，背包等
     inst:AddComponent("inventory")
+
+     --设置状态图
+     inst:SetStateGraph("SGpigpet")
+     --设置brain
+     inst:SetBrain(require "brains/pigpetbrain")
 
     return inst
 end
