@@ -2,6 +2,8 @@ require("stategraphs/commonstates")
 
 local actionhandlers = 
 {
+    --收到ACTIONS.CHOP 的时候，轉換到chop狀態
+    ActionHandler(ACTIONS.CHOP, "chop"),
 }
 
 
@@ -29,6 +31,27 @@ local states=
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
          },
     },
+    State{
+        name = "chop",
+        tags = {"chopping"},
+        
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("atk")
+        end,
+        
+        timeline=
+        {
+            
+            TimeEvent(13*FRAMES, function(inst) inst:PerformBufferedAction() end ),
+        },
+        
+        events=
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
+        },
+    },
+    
 }
 
 CommonStates.AddWalkStates(states,
