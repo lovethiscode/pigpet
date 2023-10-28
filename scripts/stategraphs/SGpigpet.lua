@@ -4,6 +4,8 @@ local actionhandlers =
 {
     --收到ACTIONS.CHOP 的时候，轉換到chop狀態
     ActionHandler(ACTIONS.CHOP, "chop"),
+    ActionHandler(ACTIONS.TAKEITEM, "pickup"),
+    ActionHandler(ACTIONS.PICKUP, "pickup"),
 }
 
 
@@ -51,7 +53,33 @@ local states=
             EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
         },
     },
-    
+    State{
+        name = "pickup",
+        tags = {"busy"},
+        
+        onenter = function(inst)
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("pig_pickup")
+        end,
+        
+        timeline=
+        {      
+            TimeEvent(10*FRAMES, function(inst) 
+                local ba = inst:GetBufferedAction()
+                if ba and ba.target then
+                    inst.components.container:GiveItem(ba.target)
+                end
+                inst:PerformBufferedAction() 
+            end ),
+        },
+        
+        events=
+        {
+            EventHandler("animover", function(inst)                
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
 }
 
 CommonStates.AddWalkStates(states,
