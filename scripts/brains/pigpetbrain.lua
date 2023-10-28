@@ -77,8 +77,12 @@ local function HasPickTarget(inst)
 end
 
 
+local MAX_CHASE_TIME = 10
+local MAX_CHASE_DIST = 30
 function PigpetBrain:OnStart()
     local root = PriorityNode ({
+            WhileNode( function() return self.inst.components.combat.target ~= nil end, "AttackMomentarily",
+                    ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST) ),
             IfNode(function() return HasPickableTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickableTarget)),
             IfNode(function() return HasPickTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickTarget)),
             IfNode(function() return StartChoppingCondition(self.inst) end, "chop", 

@@ -23,6 +23,8 @@ local pick_prefeb = {
 local events=
 {
     CommonHandlers.OnLocomote(true,true),
+    CommonHandlers.OnAttacked(true),
+    CommonHandlers.OnAttack(),
 }
 
 local states=
@@ -33,11 +35,7 @@ local states=
         tags = {"idle"},
         onenter = function(inst)
             inst.Physics:Stop()
-            if inst.components.follower.leader then
-                inst.AnimState:PlayAnimation("hungry")
-            else
-                inst.AnimState:PlayAnimation("idle_angry", true)
-            end
+            inst.AnimState:PlayAnimation("idle_loop")
         end,
         events=
          {
@@ -126,6 +124,40 @@ local states=
             end),
         },
     },
+    State{
+        name = "attack",
+        tags = {"attack", "busy"},
+        
+        onenter = function(inst)
+            inst.components.combat:StartAttack()
+            inst.Physics:Stop()
+            inst.AnimState:PlayAnimation("atk")
+        end,
+        
+        timeline=
+        {
+            TimeEvent(13*FRAMES, function(inst) inst.components.combat:DoAttack() end),
+        },
+        events=
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end),
+        },
+    },
+    State{
+        --受到攻击的状态
+        name = "hit",
+        tags = {"busy"},
+        
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("hit")
+            inst.Physics:Stop()            
+        end,
+        
+        events=
+        {
+            EventHandler("animover", function(inst) inst.sg:GoToState("idle") end ),
+        },        
+    },    
 }
 
 CommonStates.AddWalkStates(states,

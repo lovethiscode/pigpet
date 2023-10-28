@@ -2,6 +2,16 @@
 local assets = {
 	Asset("ANIM", "anim/ui_portablecellar.zip"),
 }
+
+
+
+local function OnAttacked(inst, data)
+    local attacker = data.attacker
+    inst.components.combat:SetTarget(attacker)
+end
+
+
+
 local function fn()
     local inst = CreateEntity()
 
@@ -14,10 +24,11 @@ local function fn()
     MakeCharacterPhysics(inst, 50, .5)
 
     inst:AddTag("fridge")
-    
+    inst:AddTag("character")
+
     inst.AnimState:SetBank("pigman")
     inst.AnimState:SetBuild("pig_build")
-    inst.AnimState:PlayAnimation("pig_reject")
+    inst.AnimState:PlayAnimation("idle_loop")
 
     --可以移动
     inst:AddComponent("locomotor")
@@ -25,14 +36,17 @@ local function fn()
 
    
     inst:AddComponent("health")
-    inst.components.health:SetMaxHealth(100)
+    inst.components.health:SetMaxHealth(10000)
 
 
     --可以战斗
     inst:AddComponent("combat")
+    inst.components.combat.hiteffectsymbol = "pig_torso"
     inst.components.combat:SetDefaultDamage(5)
     inst.components.combat:SetAttackPeriod(2)
     inst.components.combat:SetRange(2)
+
+    inst:ListenForEvent("attacked", OnAttacked)
 
     --添加talker 组件
     inst:AddComponent("talker")
@@ -91,6 +105,7 @@ local function fn()
      --设置brain
      inst:SetBrain(require "brains/pigpetbrain")
 
+     inst:ListenForEvent("attacked", OnAttacked)
     return inst
 end
 
