@@ -48,8 +48,8 @@ local function FindTreeToChopAction(inst)
     end
 end
 
-
-local function GetPickupTarget(inst)
+--直接拾取， 燧石
+local function GetPickableTarget(inst)
     local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
     if target then
         --放入背包       
@@ -62,10 +62,25 @@ local function HasPickableTarget(inst)
     return target ~= nil and KeepChoppingAction(inst)
 end
 
+--采集 树枝， 浆果等
+local function GetPickTarget(inst)
+    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
+    if target then
+        --放入背包       
+        return BufferedAction(inst, target, ACTIONS.PICK)
+    end
+end
+
+local function HasPickTarget(inst)
+    local target = FindEntity(inst, SEE_TREE_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
+    return target ~= nil and KeepChoppingAction(inst)
+end
+
+
 function PigpetBrain:OnStart()
     local root = PriorityNode ({
-            IfNode(function() return HasPickableTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickupTarget)),
-
+            IfNode(function() return HasPickableTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickableTarget)),
+            IfNode(function() return HasPickTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickTarget)),
             IfNode(function() return StartChoppingCondition(self.inst) end, "chop", 
                 WhileNode(function() return KeepChoppingAction(self.inst) end, "keep chopping", 
                     DoAction(self.inst, FindTreeToChopAction))),
