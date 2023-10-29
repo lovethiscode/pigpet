@@ -9,16 +9,6 @@ local actionhandlers =
     ActionHandler(ACTIONS.PICK, "pick"),
 }
 
-local pick_prefeb = {
-    sapling = "twigs",
-    flower = "petals",
-    grass = "cutgrass",
-    carrot_planted = "carrot",
-    green_mushroom = "green_cap",
-    red_mushroom = "red_cap",
-    blue_mushroom = "blue_cap",
-    berrybush = "berries",
-}
 
 local events=
 {
@@ -106,14 +96,11 @@ local states=
             TimeEvent(10*FRAMES, function(inst) 
                 local ba = inst:GetBufferedAction()
                 if ba and ba.target then
-                    local prefb_name = pick_prefeb[ba.target.prefab]
+                    local prefb_name = Pigpet.pick_prefeb[ba.target.prefab]
                     if prefb_name then
                         local item = SpawnPrefab(prefb_name)
                         inst.components.container:GiveItem(item)
-                    else 
-                        ba.target:Remove()
-                        print("没有对应的prefb:" .. tostring(ba.target.prefab))
-                    end
+                      end
                 end
                 inst:PerformBufferedAction() 
             end ),
