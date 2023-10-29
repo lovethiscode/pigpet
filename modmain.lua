@@ -12,6 +12,12 @@ PrefabFiles = {
     "pigpet"
 }
 
+Assets =
+{
+	Asset("IMAGE", "images/slots5.tex"),
+	Asset("ATLAS", "images/slots5.xml"),
+}
+
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
@@ -37,6 +43,47 @@ AddClassPostConstruct("widgets/containerwidget", function(self)
         old_OnUpdate(self, dt)
     end
 end)
+
+
+--增加两个物品栏
+GLOBAL.EQUIPSLOTS.BACK = "back"
+GLOBAL.EQUIPSLOTS.NECK = "neck"
+AddClassPostConstruct("screens/playerhud", function(self) 
+	local oldfn = self.SetMainCharacter
+	function self:SetMainCharacter(maincharacter,...)
+		oldfn(self, maincharacter,...)
+		if not(self.controls and self.controls.inv) then
+			print("ERROR: Can't inject in screens/playerhud.")
+			return
+		end
+        --背包
+		self.controls.inv:AddEquipSlot(GLOBAL.EQUIPSLOTS.BACK, "images/slots5.xml", "back.tex")
+        --项链，
+		self.controls.inv:AddEquipSlot(GLOBAL.EQUIPSLOTS.NECK, "images/slots5.xml", "neck.tex")
+		if self.controls.inv.bg then
+			self.controls.inv.bg:SetScale(1.25,1,1.25)
+		end
+		local bp = maincharacter.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BACK)
+		if bp and bp.components.container then
+			bp.components.container:Close()
+			bp.components.container:Open(maincharacter)
+		end
+	end
+end)
+
+
+local amulets = {"amulet", "blueamulet", "purpleamulet", "orangeamulet", "greenamulet", "yellowamulet", --standard
+	    "blackamulet", "pinkamulet", "whiteamulet", "endiaamulet", "grayamulet", "broken_frosthammer",
+	    "musha_egg", "musha_egg1", "musha_egg2", "musha_egg3", "musha_egg8", "musha_eggs1", "musha_eggs2", "musha_eggs3",
+	} --mods
+
+for i,v in ipairs(amulets) do
+	AddPrefabPostInit(v, function(inst)
+		if inst.components.equippable then
+			inst.components.equippable.equipslot = GLOBAL.EQUIPSLOTS.NECK
+		end
+	end)
+end
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
     if key == GLOBAL.KEY_F1 and not down then
