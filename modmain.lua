@@ -6,6 +6,16 @@ PrefabFiles = {
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
+GLOBAL.Pigpet = {}
+
+
+GLOBAL.Pigpet.pick_prefeb = {
+    sapling = "twigs",
+    flower = "petals",
+    grass = "cutgrass",
+    carrot_planted = "carrot",
+    berrybush = "berries",
+}
 
 --监听所有预制物的构造
 AddPrefabPostInitAny(function(inst)
@@ -15,8 +25,6 @@ AddPrefabPostInitAny(function(inst)
         inst.components.stackable.maxsize = 999
     end
 end)
-
-
 
 AddClassPostConstruct("widgets/containerwidget", function(self, owner)
     --替换 OnUpdate 函数

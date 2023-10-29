@@ -50,23 +50,36 @@ end
 
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
-    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
+    return FindEntity(inst, SEE_TREE_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
+end
+
+local function DoPickableTarget(inst)
+    local target = GetPickableTarget(inst)
     if target then
         --放入背包       
         return BufferedAction(inst, target, ACTIONS.PICKUP)
     end
 end
 
-local function HasPickableTarget(inst)
-    local target = FindEntity(inst, SEE_TREE_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
-    return target ~= nil and KeepChoppingAction(inst)
-end
 
 --采集 树枝， 浆果等
 local function GetPickTarget(inst)
-    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
-    if target then
-        --放入背包       
+    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) 
+        if item.components.pickable and item.components.pickable:CanBePicked() then
+            local prefb_name = Pigpet.pick_prefeb[item.prefab]
+            if prefb_name then
+                return true
+            else 
+                print("没有对应的prefb:" .. tostring(item.prefab))
+            end
+        end
+    end)
+    return target
+end
+
+local function  DoPickTarget(inst)
+    local target = GetPickTarget(inst)
+    if target then      
         return BufferedAction(inst, target, ACTIONS.PICK)
     end
 end
@@ -83,8 +96,10 @@ function PigpetBrain:OnStart()
     local root = PriorityNode ({
             WhileNode( function() return self.inst.components.combat.target ~= nil end, "AttackMomentarily",
                     ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST) ),
-            IfNode(function() return HasPickableTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickableTarget)),
-            IfNode(function() return HasPickTarget(self.inst) end, "keep pickup",  DoAction(self.inst, GetPickTarget)),
+            --可直接拾取
+            IfNode(function() return GetPickableTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup",  DoAction(self.inst, DoPickableTarget)),
+            --采集
+            IfNode(function() return GetPickTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup",  DoAction(self.inst, DoPickTarget)),
             IfNode(function() return StartChoppingCondition(self.inst) end, "chop", 
                 WhileNode(function() return KeepChoppingAction(self.inst) end, "keep chopping", 
                     DoAction(self.inst, FindTreeToChopAction))),
