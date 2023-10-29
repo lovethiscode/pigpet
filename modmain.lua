@@ -26,7 +26,7 @@ AddPrefabPostInitAny(function(inst)
     end
 end)
 
-AddClassPostConstruct("widgets/containerwidget", function(self, owner)
+AddClassPostConstruct("widgets/containerwidget", function(self)
     --替换 OnUpdate 函数
     local old_OnUpdate = self.OnUpdate
     self.OnUpdate = function(self, dt)

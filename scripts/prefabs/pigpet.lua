@@ -11,6 +11,54 @@ local function OnAttacked(inst, data)
 end
 
 
+local function OnItemGet(inst, data)
+    --没有leader 就返回
+    if not inst.components.follower.leader then
+        return
+    end
+    if data.slot == 116 or data.slot == 117 or data.slot == 118 then
+        print("装备物品")
+        inst.components.inventory:Equip(data.item)
+        return
+    end
+end
+
+local function OnItemLose(inst, data) 
+    if data.slot == 116 then       
+        inst.components.inventory:Unequip(EQUIPSLOTS.HANDS)
+    elseif data.slot == 117 then
+        inst.components.inventory:Unequip(EQUIPSLOTS.BODY)
+    elseif data.slot == 118 then
+        inst.components.inventory:Unequip(EQUIPSLOTS.HEAD)
+    end
+
+end
+
+local function itemtest(inst, item, slot)
+    if slot == 116 then
+        --判断是不是武器
+        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.HANDS then
+            --leader 说一句话
+            inst.components.talker:Say("这里只能放手持物品")
+            return false
+        end
+    elseif slot == 117 then
+        --判断是不是防具
+        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.BODY then
+            --leader 说一句话
+            inst.components.talker:Say("这里只能放防具")
+            return false
+        end
+    elseif slot == 118 then
+        --判断是不是帽子
+        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.HEAD then
+            --leader 说一句话
+            inst.components.talker:Say("这里只能放帽子")
+            return false
+        end
+    end
+    return true
+end
 
 local function fn()
     local inst = CreateEntity()
@@ -37,7 +85,6 @@ local function fn()
    
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(10000)
-
 
     --可以战斗
     inst:AddComponent("combat")
@@ -86,6 +133,7 @@ local function fn()
     inst.components.container.widgetpos = Vector3(0, 130, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
+    inst.components.container.itemtestfn = itemtest
 
     local widgetbuttoninfo = {
         text = "关闭",
@@ -99,13 +147,13 @@ local function fn()
     }
     --添加一个关闭按钮
     inst.components.container.widgetbuttoninfo = widgetbuttoninfo
-
      --设置状态图
      inst:SetStateGraph("SGpigpet")
      --设置brain
      inst:SetBrain(require "brains/pigpetbrain")
-
      inst:ListenForEvent("attacked", OnAttacked)
+    inst:ListenForEvent("itemget", OnItemGet)
+    inst:ListenForEvent("itemlose", OnItemLose)
     return inst
 end
 
