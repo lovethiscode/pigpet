@@ -8,7 +8,6 @@ GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物�
 
 GLOBAL.Pigpet = {}
 
-
 GLOBAL.Pigpet.pick_prefeb = {
     sapling = "twigs",
     flower = "petals",
@@ -16,6 +15,8 @@ GLOBAL.Pigpet.pick_prefeb = {
     carrot_planted = "carrot",
     berrybush = "berries",
 }
+
+modimport("showinfo.lua")
 
 --监听所有预制物的构造
 AddPrefabPostInitAny(function(inst)

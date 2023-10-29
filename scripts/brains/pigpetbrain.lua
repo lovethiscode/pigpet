@@ -1,7 +1,7 @@
 require "behaviours/wander"
 local MIN_FOLLOW_DIST = 0
 local MAX_FOLLOW_DIST = 5
-local TARGET_FOLLOW_DIST = 9
+local TARGET_FOLLOW_DIST = 7
 local MAX_WANDER_DIST = 3
 
 local PigpetBrain = Class(Brain, function(self, inst)

@@ -133,7 +133,11 @@ local function fn()
     inst.components.container.widgetpos = Vector3(0, 130, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
-    inst.components.container.itemtestfn = itemtest
+
+    --[[
+    inst:ListenForEvent("itemget", OnItemGet)
+    inst:ListenForEvent("itemlose", OnItemLose)
+    inst.components.container.itemtestfn = itemtest]]
 
     local widgetbuttoninfo = {
         text = "关闭",
@@ -152,8 +156,6 @@ local function fn()
      --设置brain
      inst:SetBrain(require "brains/pigpetbrain")
      inst:ListenForEvent("attacked", OnAttacked)
-    inst:ListenForEvent("itemget", OnItemGet)
-    inst:ListenForEvent("itemlose", OnItemLose)
     return inst
 end
 
