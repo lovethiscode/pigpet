@@ -84,14 +84,13 @@ local function fn()
 
    
     inst:AddComponent("health")
-    inst.components.health:SetMaxHealth(10000)
+    inst.components.health:SetMaxHealth(20)
 
     --可以战斗
     inst:AddComponent("combat")
     inst.components.combat.hiteffectsymbol = "pig_torso"
     inst.components.combat:SetDefaultDamage(5)
     inst.components.combat:SetAttackPeriod(2)
-    inst.components.combat:SetRange(2)
 
     inst:ListenForEvent("attacked", OnAttacked)
 
@@ -151,11 +150,15 @@ local function fn()
     }
     --添加一个关闭按钮
     inst.components.container.widgetbuttoninfo = widgetbuttoninfo
+
+    --添加growth 组件
+    inst:AddComponent("growth")
+
      --设置状态图
      inst:SetStateGraph("SGpigpet")
      --设置brain
      inst:SetBrain(require "brains/pigpetbrain")
-     inst:ListenForEvent("attacked", OnAttacked)
+     inst:ListenForEvent("attacked", OnAttacked)         
     return inst
 end
 

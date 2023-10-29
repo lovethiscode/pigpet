@@ -1,6 +1,3 @@
-
-GLOBAL.require("language-cn")
-
 local round2 =function(num, idp)
 	return GLOBAL.tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
@@ -102,6 +99,10 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 				if target.components.workable then
 					local action =  target.components.workable:GetWorkAction()
 					str = str .."\n动作： ".. tostring(action.id)
+				end
+				--经验
+				if target.components.growth then
+					str = str .. "\n等级：" .. target.components.growth:GetLevel() .. " （经验: "..target.components.growth:GetCurrentExp().."/"..target.components.growth:GetCurrentMaxExp() .. "）"
 				end
 			end
 		end

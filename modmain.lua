@@ -1,11 +1,3 @@
---声明预制物
-PrefabFiles = {
-    "pigpet"
-}
-
-GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
-GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
-
 GLOBAL.Pigpet = {}
 
 GLOBAL.Pigpet.pick_prefeb = {
@@ -15,6 +7,13 @@ GLOBAL.Pigpet.pick_prefeb = {
     carrot_planted = "carrot",
     berrybush = "berries",
 }
+--声明预制物
+PrefabFiles = {
+    "pigpet"
+}
+
+GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
+GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
 modimport("showinfo.lua")
 
