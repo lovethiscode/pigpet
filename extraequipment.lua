@@ -45,10 +45,21 @@ for i,v in ipairs(amulets) do
 	end)
 end
 
+local backpacks = {"backpack", "piggyback", "krampus_sack", "icepack", "mailpack", "thatchpack", "piratepack", "spicepack", "spicepack", --standard
+	"seasack", --new
+	"bunnyback", "wolfyback", "sunnybackpack", "frostback", "pirateback" } --mod
+for i,v in ipairs(backpacks) do
+	AddPrefabPostInit(v,function(inst)
+		if inst.components.equippable then
+			inst.components.equippable.equipslot = GLOBAL.EQUIPSLOTS.BACK			
+		end
+	end)
+end
+
 --复活的红宝石有特殊逻辑，当人物死亡的时候，会查找BODY上是否有 复活红宝石，所以这里需要特殊处理
 
-local comp_res = require "components/resurrectable"
-local comp_inv = require "components/inventory"
+local comp_res = GLOBAL.require "components/resurrectable"
+local comp_inv = GLOBAL.require "components/inventory"
 
 local fix_once = nil --While hooking fix only once. May be not compatible with some mods.
 
@@ -56,7 +67,7 @@ local old_GetEquippedItem = comp_inv.GetEquippedItem
 function comp_inv:GetEquippedItem(slot,...)
     if fix_once ~= nil then
         fix_once = nil
-        local item = old_GetEquippedItem(self,EQUIPSLOTS.NECK,...)
+        local item = old_GetEquippedItem(self,GLOBAL.EQUIPSLOTS.NECK,...)
         if item ~= nil and item.prefab == "amulet" then --We need to hook only amulet.
             return item
         end
@@ -82,3 +93,22 @@ function comp_res:DoResurrect(...)
     fix_once = true
     return old_DoResurrect(self,...)
 end
+
+--Fixing states for resurrection.
+AddSimPostInit(function()
+	for instance,_ in pairs(GLOBAL.SGManager.instances) do
+		if(instance.sg.name == "wilson") then
+			for k,v in pairs(instance.sg.states) do
+				if(v.name == "amulet_rebirth") then
+					local old_fn = v["onexit"]
+					v["onexit"] = function(...) --Hook the function. Don't replace it
+						fix_once = true
+						return old_fn(...)
+					end
+					break
+				end
+			end
+			break
+		end
+	end
+end)
