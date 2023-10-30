@@ -1,7 +1,7 @@
 local round2 =function(num, idp)
 	return GLOBAL.tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
-
+--鼠标悬浮在物品上显示信息
 AddClassPostConstruct("widgets/hoverer",function(self)
 	local old_SetString = self.text.SetString
 	self.text.SetString = function(text,str)
@@ -109,3 +109,246 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 		return old_SetString(text,str)
 	end
 end)
+
+
+
+--鼠标放在物品栏显示物品详细信息
+local round = function(n)
+    if not n or type(n) ~= "number" then return "NaN" end
+    return math.floor(n + 0.5)
+end
+local roundsg = function(value) return math.floor(value * 10 + 0.5) / 10 end
+local function roundstr(n) return tostring(round(n)) end
+
+
+local function GetDesc(item)
+	if not item then return "" end
+	local str = ""
+	local ic = item.components
+	local tmp = 0
+	--显示代码
+	if item.prefab then
+		str = str .."\n代码: ".. tostring(item.prefab)
+	end
+	--食物属性：三维回复效果
+	if ic.edible and GLOBAL.GetPlayer().components.eater:AbleToEat(item) then
+        local hunger = roundsg(ic.edible:GetHunger(item))
+        local health = roundsg(ic.edible:GetHealth(item))
+        local sanity = roundsg(ic.edible:GetSanity(item))
+		if hunger > 0 then
+			hunger = "+" .. tostring(hunger)
+		end
+		if sanity > 0 then
+			sanity = "+" .. tostring(sanity)
+		end
+		if health > 0 then
+		    health = "+" .. tostring(health)
+		end
+        str = str .."\n饥饿: ".. tostring(hunger) .."/".."精神: "..tostring(sanity) .."/".."生命: ".. tostring(health) 
+    end
+	--食物价值金块
+	if ic.tradable then
+		if ic.tradable.goldvalue and ic.tradable.goldvalue > 0 then 
+		str = str .."\n价值金块: "..ic.tradable.goldvalue end
+	end
+	--武器伤害，攻击范围：吹箭
+	if ic.weapon then
+		str = str ..DMG..math.ceil(ic.weapon.damage*10)/10
+		if ic.weapon.hitrange then 
+		    str = str .."\n范围: "..ic.weapon.hitrange 
+		end
+	end
+	--食物距离腐烂时间
+	if ic.perishable then
+        local owner = ic.inventoryitem and ic.inventoryitem.owner or 0
+        local modifier = 1
+        if owner then
+            if owner:HasTag("fridge") then
+                if item:HasTag("frozen") then
+                    modifier = TUNING.PERISH_COLD_FROZEN_MULT
+                else
+                    modifier = TUNING.PERISH_FRIDGE_MULT
+                end
+            elseif owner:HasTag("spoiler") then
+                modifier = TUNING.PERISH_GROUND_MULT
+            end
+        else
+            modifier = TUNING.PERISH_GROUND_MULT
+        end
+        if GLOBAL.GetSeasonManager() and 0 >
+            GLOBAL.GetSeasonManager():GetCurrentTemperature() then
+            if item:HasTag("frozen") and not ic.perishable.frozenfiremult then
+                modifier = TUNING.PERISH_COLD_FROZEN_MULT
+            else
+                modifier = modifier * TUNING.PERISH_WINTER_MULT
+            end
+        end
+        if ic.perishable.frozenfiremult then
+            modifier = modifier * TUNING.PERISH_FROZEN_FIRE_MULT
+        end
+        if TUNING.OVERHEAT_TEMP ~= nil and GLOBAL.GetSeasonManager() and
+            GLOBAL.GetSeasonManager():GetCurrentTemperature() >
+            TUNING.OVERHEAT_TEMP then
+            modifier = modifier * TUNING.PERISH_SUMMER_MULT
+        end
+        modifier = modifier * TUNING.PERISH_GLOBAL_MULT
+        local perishremainingtime = math.floor(ic.perishable.perishremainingtime / TUNING.TOTAL_DAY_TIME / modifier *10 + 0.5) / 10
+        str = str .."\n距离腐烂: ".. perishremainingtime.." 天"
+    end
+	--格子内鸟的hp
+	if ic.health then
+		str = str .."\n"..ic.health.currenthealth.."/"..ic.health.maxhealth
+	end
+	--回血，比如药膏回血量
+	if ic.healer and (ic.healer.health ~= 0) then
+		str = str .."\n生命: +"..ic.healer.health
+	end
+	--穿戴物的防御、耐久度
+    if ic.armor then
+		str = str..ABSOBR..ic.armor.absorb_percent*100 .."%("
+	    if ic.armor.tags then	
+			for _, v in ipairs(ic.armor.tags) do
+				str = str .. v .. ";"
+			end
+	    str = str .. ")"
+		end
+	end
+	--暖石温度
+	if ic.temperature then
+		str = str .."\n温度: "..math.floor(ic.temperature.current*10)/10 .. "\176C"
+	end
+	--summer隔热、warm保暖效果
+	if ic.insulator then
+        if ic.insulator.insulation then
+            local insulation = round(ic.insulator.insulation)
+            if insulation and string.lower(ic.insulator.type) == "summer" and
+                summer~=0 then
+                str = str .."\n隔热: "..tostring(insulation)
+            end
+        end
+        if ic.insulator.insulation then
+            local insulation = round(ic.insulator.insulation)
+            if insulation and string.lower(ic.insulator.type) == "winter" and
+                winter~=0 then
+                str = str .."\n保暖: "..tostring(insulation)
+            end
+        end
+    end
+	--防水效果
+	if ic.waterproofer and ic.waterproofer.effectiveness ~= 0 then
+        str = str.."\n防水: ".. ic.waterproofer.effectiveness*100 .."%"
+    end
+	--精神回复效果
+	if ic.dapperness and ic.dapperness.dapperness and
+        type(ic.dapperness.dapperness) == "number" and ic.dapperness.dapperness ~= 0 then
+        local sanity = roundstr(ic.dapperness.dapperness)
+        str = str .."\n".."精神: "..sanity
+    elseif ic.equippable and ic.equippable.dapperness and
+        type(ic.equippable.dapperness) == "number" and ic.equippable.dapperness ~= 0 then
+        local sanity = roundsg(ic.equippable.dapperness * 60)
+		if sanity > 0 then
+			sanity = "+" .. tostring(sanity)
+		end
+        str = str .."\n".."精神: "..sanity.."/min"
+    end
+	--装备增加的移速
+	if ic.equippable then
+	    if ic.equippable.walkspeedmult and ic.equippable.walkspeedmult ~= 0 then 
+	        local added_speed = ic.equippable.walkspeedmult*100
+	        if added_speed > 0 then
+	            added_speed = "+" .. tostring(added_speed)
+		    end
+		    str = str .."\n移速: "..added_speed .."%"
+	    end
+	end
+	--爆炸伤害
+	if item.components.explosive then
+		str = str .."\n爆炸伤害: "..item.components.explosive.explosivedamage.."\n爆炸伤害: "..item.components.explosive.explosiverange
+	end
+	--手持物耐久度
+	if ic.finiteuses then
+	    if ic.finiteuses.consumption then
+	        local use = 1
+	        for k,v in pairs(ic.finiteuses.consumption) do
+		    use = v
+	        end
+	    str = str .."\n耐久: "..math.floor(ic.finiteuses.current/use+.5).."/"..math.floor(ic.finiteuses.total/use+.5).."\n "
+	    else
+	    str = str .."\n耐久: "..ic.finiteuses.current.."/"..ic.finiteuses.total 
+	    end  
+	end
+	--燃料性能
+	if ic.fueled then
+        str = str .. "\n剩余燃料:" .. tostring(ic.fueled.currentfuel) .. "/" .. tostring(ic.fueled.fueltype)
+    end
+
+	if ic.fuel then
+		str = str .. "\n燃料:" .. tostring(ic.fuel.fuelvalue) .. "/" .. tostring(ic.fuel.fueltype)
+	end
+	--火山献祭
+	if ic.appeasement then
+        str = str .."\n火山献祭: ".. tostring(ic.appeasement.appeasementvalue)
+    end
+	--显示打包物品
+	if ic.unwrappable then
+        local packageprefabname = ""
+        for i, v in ipairs(ic.unwrappable.itemdata) do
+            if v and v.data.stackable and v.data.stackable.stack then
+                packageprefabname = packageprefabname.."\n" ..GLOBAL.STRINGS.NAMES[string.upper(v.prefab)] .."*".. v.data.stackable.stack
+            elseif v and not v.data.stackable then
+                packageprefabname = packageprefabname.."\n"..GLOBAL.STRINGS.NAMES[string.upper(v.prefab)]
+            end
+        end
+        return packageprefabname
+    end
+	return str
+end
+
+local Inv = GLOBAL.require "widgets/inventorybar"
+local OldUpdCT = Inv.UpdateCursorText
+local ItemTile = GLOBAL.require "widgets/itemtile"
+local OldGDS = ItemTile.GetDescriptionString
+local Text = GLOBAL.require "widgets/text"
+
+function Inv:UpdateCursorText()
+	if self.actionstringbody.GetStringAdd and self.actionstringbody.SetStringAdd then
+		local str = GetDesc(self:GetCursorItem())
+		self.actionstringbody:SetStringAdd(str)
+	end
+	OldUpdCT(self)
+end
+
+
+function ItemTile:GetDescriptionString()
+	local oldstr = OldGDS(self)
+	local str = ""
+	if self.item and self.item.components and self.item.components.inventoryitem then
+		str = GetDesc(self.item)
+	end
+	if string.len(str) > 3 then
+		str = oldstr..str
+	else
+		str = oldstr
+	end
+	return str
+end
+
+
+function Text:SetStringAdd(str)
+	self.stringadd = str
+end
+
+function Text:SetString(str)
+	if not str then str = "" else str = tostring(str) end
+	self.string = str
+	if self.stringadd and (type(self.stringadd) == "string") then str = str .. self.stringadd end
+	self.inst.TextWidget:SetString(str or "")
+end
+
+function Text:GetStringAdd()
+	if self.stringadd and (type(self.stringadd) == "string") then 
+		return self.stringadd 
+	else
+		return ""
+	end
+end
