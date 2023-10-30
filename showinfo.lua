@@ -153,7 +153,7 @@ local function GetDesc(item)
 	end
 	--武器伤害，攻击范围：吹箭
 	if ic.weapon then
-		str = str ..DMG..math.ceil(ic.weapon.damage*10)/10
+		str = str .."\n伤害: "..math.ceil(ic.weapon.damage*10)/10
 		if ic.weapon.hitrange then 
 		    str = str .."\n范围: "..ic.weapon.hitrange 
 		end
@@ -270,11 +270,11 @@ local function GetDesc(item)
 	    if ic.finiteuses.consumption then
 	        local use = 1
 	        for k,v in pairs(ic.finiteuses.consumption) do
-		    use = v
+		   	 use = v
 	        end
-	    str = str .."\n耐久: "..math.floor(ic.finiteuses.current/use+.5).."/"..math.floor(ic.finiteuses.total/use+.5).."\n "
+	    	str = str .."\n耐久: "..math.floor(ic.finiteuses.current/use+.5).."/"..math.floor(ic.finiteuses.total/use+.5).."\n "
 	    else
-	    str = str .."\n耐久: "..ic.finiteuses.current.."/"..ic.finiteuses.total 
+	    	str = str .."\n耐久: "..ic.finiteuses.current.."/"..ic.finiteuses.total 
 	    end  
 	end
 	--燃料性能

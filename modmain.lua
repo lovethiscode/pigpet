@@ -27,17 +27,16 @@ AddPrefabPostInitAny(function(inst)
     end
 end)
 
-AddClassPostConstruct("widgets/containerwidget", function(self)
-    --替换 OnUpdate 函数
-    local old_OnUpdate = self.OnUpdate
-    self.OnUpdate = function(self, dt)
-        if self.container and self.container.prefab == "pigpet" then
-            return
-        end
-        --调用原来的函数
-        old_OnUpdate(self, dt)
+--重写containerwidget OnUpdate 函数
+local container_widget = GLOBAL.require "widgets/containerwidget"
+local old_OnUpdate = container_widget.OnUpdate
+function container_widget:OnUpdate(dt)
+    if self.container and self.container.prefab == "pigpet" then
+        return
     end
-end)
+    --调用原来的函数
+    old_OnUpdate(self, dt)
+end
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
     if key == GLOBAL.KEY_F1 and not down then
@@ -62,5 +61,20 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
             print("放入背包:" .. tostring(target))
             player.components.inventory:GiveItem(target)
         end
+    elseif key == GLOBAL.KEY_F4 and not down then
+        --获取玩家的跟随者
+        local player = GLOBAL.GetPlayer()
+        local followers = player.components.leader.followers;
+        for k,v in pairs(followers) do
+            if k.prefab == "pigpet" then
+                --如果没有打开背包就打开背包
+                if k.components.container:IsOpen() then                   
+                    k.components.container:Close()
+                else                    
+                    k.components.container:Open(player)
+                end
+                return true
+            end
+        end
     end
-end)
+end)    

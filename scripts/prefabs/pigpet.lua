@@ -129,7 +129,7 @@ local function fn()
     inst.components.container.widgetslotpos = slotpos
     inst.components.container.widgetanimbank = "ui_chest_3x3"
     inst.components.container.widgetanimbuild = "ui_portablecellar"
-    inst.components.container.widgetpos = Vector3(0, 130, 0)
+    inst.components.container.widgetpos = Vector3(0, -200, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
 
