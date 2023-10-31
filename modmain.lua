@@ -37,15 +37,33 @@ function container_widget:OnUpdate(dt)
     --调用原来的函数
     old_OnUpdate(self, dt)
 end
+--冰箱不会腐烂
+TUNING.PERISH_FRIDGE_MULT = 0
+
+
+--监听世界的构造
+AddSimPostInit(function()
+    local player = GLOBAL.GetPlayer()
+    --获取玩家的跟随者
+    local followers = player.components.leader.followers;
+    --判断是否有pigpet跟随者
+    local has_pigpet = false
+    for k,v in pairs(followers) do
+        --如果是pigpet
+        if k.prefab == "pigpet" then
+            has_pigpet = true;
+            break
+        end
+    end
+    if not has_pigpet then
+        local pig = GLOBAL.SpawnPrefab("pigpet")
+        pig.Transform:SetPosition(player.Transform:GetWorldPosition())
+        pig.components.follower:SetLeader(player)
+    end
+end)
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
-    if key == GLOBAL.KEY_F1 and not down then
-         --生成一个pigpet
-        local pig = GLOBAL.SpawnPrefab("pigpet")
-        pig.Transform:SetPosition(GLOBAL.GetPlayer().Transform:GetWorldPosition())
-        pig.components.follower:SetLeader(GLOBAL.GetPlayer())
-
-    elseif key == GLOBAL.KEY_F2 and not down then
+    if key == GLOBAL.KEY_F2 and not down then
         local pig = GLOBAL.SpawnPrefab("pigman")
         pig.Transform:SetPosition(GLOBAL.GetPlayer().Transform:GetWorldPosition())
         pig.components.follower:SetLeader(GLOBAL.GetPlayer())
@@ -61,7 +79,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
             print("放入背包:" .. tostring(target))
             player.components.inventory:GiveItem(target)
         end
-    elseif key == GLOBAL.KEY_F4 and not down then
+    elseif key == GLOBAL.KEY_F1 and not down then
         --获取玩家的跟随者
         local player = GLOBAL.GetPlayer()
         local followers = player.components.leader.followers;
