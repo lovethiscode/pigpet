@@ -41,25 +41,38 @@ end
 TUNING.PERISH_FRIDGE_MULT = 0
 
 
---监听世界的构造
-AddSimPostInit(function()
+local function CreatePigpetIfnot()
     local player = GLOBAL.GetPlayer()
     --获取玩家的跟随者
     local followers = player.components.leader.followers;
     --判断是否有pigpet跟随者
-    local has_pigpet = false
+    local pigpet
     for k,v in pairs(followers) do
         --如果是pigpet
         if k.prefab == "pigpet" then
-            has_pigpet = true;
+            pigpet = k
             break
         end
     end
-    if not has_pigpet then
-        local pig = GLOBAL.SpawnPrefab("pigpet")
-        pig.Transform:SetPosition(player.Transform:GetWorldPosition())
-        pig.components.follower:SetLeader(player)
+    if not pigpet then
+        pigpet = GLOBAL.SpawnPrefab("pigpet")
+        pigpet.Transform:SetPosition(player.Transform:GetWorldPosition())
+        pigpet.components.follower:SetLeader(player)
     end
+    player.components.inventory:SetOverflow(pigpet)
+end
+
+local function ShowFullMap(inst)
+    inst:DoTaskInTime( 0.001, function() 
+        minimap = TheSim:FindFirstEntityWithTag("minimap")
+        minimap.MiniMap:ShowArea(0,0,0,40000)
+end)
+end
+
+--监听世界的构造
+AddSimPostInit(function(inst)
+   CreatePigpetIfnot()
+   ShowFullMap(inst)
 end)
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
