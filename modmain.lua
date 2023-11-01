@@ -76,7 +76,7 @@ AddSimPostInit(function(inst)
 end)
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
-    if key == GLOBAL.KEY_F2 and not down then
+    if key == GLOBAL.KEY_F3 and not down then
         local pig = GLOBAL.SpawnPrefab("pigman")
         pig.Transform:SetPosition(GLOBAL.GetPlayer().Transform:GetWorldPosition())
         pig.components.follower:SetLeader(GLOBAL.GetPlayer())
@@ -84,14 +84,9 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         pig:SetStateGraph("SGpigpet")
         --设置brain
         pig:SetBrain(GLOBAL.require "brains/pigpetbrain")
-    elseif key == GLOBAL.KEY_F3 and not down then
-        local player = GLOBAL.GetPlayer()
-        local target = GLOBAL.FindEntity(player, 10, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
-        if target then
-            --放入背包       
-            print("放入背包:" .. tostring(target))
-            player.components.inventory:GiveItem(target)
-        end
+    elseif key == GLOBAL.KEY_F2 and not down then
+       local autoCook = GLOBAL.require "autocook"
+       autoCook()
     elseif key == GLOBAL.KEY_F1 and not down then
         --获取玩家的跟随者
         local player = GLOBAL.GetPlayer()
