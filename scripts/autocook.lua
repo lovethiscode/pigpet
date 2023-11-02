@@ -9,47 +9,50 @@ function create_node(inst, count)
 end
 
 --判断是否可以烹饪出食物
-function is_ok(selected_nodes)
-    if #selected_nodes ~= SELECTED_COUNT then
+function CanCookFood(selectedIngredient)
+    if #selectedIngredient ~= SELECTED_COUNT then
         return false
     end
     local ings = {}			
-    for _, item in ipairs(selected_nodes) do
-      table.insert(ings, item.prefab)
+    for _, item in ipairs(selectedIngredient) do
+      table.insert(ings, item.inst.prefab)
     end
-   
     return cooking.CalculateRecipe("cookpot", ings)
 end
 
-function print_selected_nodes(selected_nodes, product, cooktime, printed_combinations)
-  if not printed_combinations[product.prefab] then
+function SaveCookProduct(selectedIngredient, product, cooktime, productResult)
+  if not productResult[product] then
     local cooktable = {}
-    cooktable.selected_nodes = selected_nodes
+    cooktable.selectedIngredient = {}
+    --拷贝一份selectedIngredient
+    for _, item in ipairs(selectedIngredient) do
+      table.insert(cooktable.selectedIngredient, item)
+    end
+
     cooktable.cooktime = cooktime
-    printed_combinations[product.prefab] = cooktable
+    productResult[product] = cooktable
   end
 end
 
-function find_combinations(selected_nodes, start, n, nodes, printed_combinations)
-    local product, cooktime = is_ok(selected_nodes) 
-    if product then
-        print_selected_nodes(selected_nodes, product, cooktime, printed_combinations)
+function FindCookIngredient(selectedIngredient, start, n, nodes, productResult)
+    local product, cooktime = CanCookFood(selectedIngredient) 
+    if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
+        SaveCookProduct(selectedIngredient, product, cooktime, productResult)
     end
-
     if n == 0 or start > #nodes then
         return
     end
 
     for i = start, #nodes do
         if nodes[i].count > 0 then
-            table.insert(selected_nodes, nodes[i])
+            table.insert(selectedIngredient, nodes[i])
             nodes[i].count = nodes[i].count - 1
-            find_combinations(selected_nodes, i, n - 1, nodes, printed_combinations)
-            table.remove(selected_nodes)
+            FindCookIngredient(selectedIngredient, i, n - 1, nodes, productResult)
+            table.remove(selectedIngredient)
             nodes[i].count = nodes[i].count + 1
         end
 
-        find_combinations(selected_nodes, i + 1, n, nodes, printed_combinations)
+        FindCookIngredient(selectedIngredient, i + 1, n, nodes, productResult)
     end
 end
 
@@ -70,6 +73,27 @@ local function CollectIngredient(container, result)
   end
 end
 
+local function FindAvaibleCookpot(guy)
+  if guy.prefab == "cookpot" then
+    if not guy.components.stewer then
+        return
+    end
+    --判断烹饪锅是否已经完成或者正在烹饪
+    if guy.components.stewer:IsDone() or guy.components.stewer.cooking then
+        return
+    end
+    --判断烹饪锅是否有食材
+    local number_items = guy.components.container:GetNumSlots()
+    --遍历所有的items
+    for i = 1, number_items do
+        local item = guy.components.container:GetItemInSlot(i)
+        if item  then
+            return
+        end
+    end
+    return true
+  end
+end
 
 local function AutoCook()
      --单机版获取玩家的位置
@@ -77,30 +101,12 @@ local function AutoCook()
      local x, y, z = player.Transform:GetWorldPosition()
      --查找玩家附近可用的烹饪锅
      local cookerpot = FindEntity(player, 10, function(guy)
-        if guy.prefab == "cookpot" then
-            if not guy.components.stewer then
-                return
-            end
-            --判断烹饪锅是否已经完成或者正在烹饪
-            if guy.components.stewer:IsDone() or guy.components.stewer.cooking then
-                return
-            end
-            --判断烹饪锅是否有食材
-            local number_items = guy.components.container:GetNumSlots()
-            --遍历所有的items
-            for i = 1, number_items do
-                local item = guy.components.container:GetItemInSlot(i)
-                if item  then
-                    return
-                end
-            end
-            return true
-        end
+        return FindAvaibleCookpot(guy)
      end)
      if cookerpot == nil then
         --让主角说一句话
-        player.components.talker:Say("附近没有烹饪锅或者烹饪锅有食材")
-        return
+        --player.components.talker:Say("附近没有烹饪锅或者烹饪锅有食材")
+        --return
      end
     local Ingredients = {}
     --收集角色的食材
@@ -113,44 +119,20 @@ local function AutoCook()
           break
         end
     end
-    --打印出 Ingredients 内容
-    --[[for k, v in pairs(Ingredients) do
-        print("食材名称：" .. v.inst.prefab)
-        print("食材数量：" .. v.count)
-    end--]]
 
-
-    local printed_combinations = {}
-    print("start")
-    find_combinations({}, 1, SELECTED_COUNT, Ingredients, printed_combinations)
-    print("end")
-    --判断 printed_combinations 是否有内容
-    if next(printed_combinations) == nil then
-        player.components.talker:Say("没有可以烹饪的食物")
-        return
-    end
-    --打印出 printed_combinations 内容
-    for k, v in pairs(printed_combinations) do
-        print("食物名称：" .. k)
-        print("烹饪时间：" .. v.cooktime)
-        print("食材：")
-        for _, item in ipairs(v.selected_nodes) do
-            print(item.inst.prefab)
+    local productResult = {}
+    FindCookIngredient({}, 1, SELECTED_COUNT, Ingredients, productResult)
+    --打印出 productResult 内容
+    local hasProduct = false
+    for k, v in pairs(productResult) do
+        hasProduct = true
+        for _, item in ipairs(v.selectedIngredient) do
+          --info = info .. tostring(item.inst.prefab) .. " "
         end
     end
-
-    --[[
-    local ings = {}			
-			for k,v in pairs (self.inst.components.container.slots) do
-				table.insert(ings, v.prefab)
-				if v.components.perishable then
-					spoilage_n = spoilage_n + 1
-					spoilage_total = spoilage_total + v.components.perishable:GetPercent()
-				end
-			end    
-    local cooktime = 1
-		self.product, cooktime = cooking.CalculateRecipe(self.inst.prefab, ings)
-	]]
+    if not hasProduct then
+      player.components.talker:Say("没有可以烹饪的食材")
+    end
 end
 
 
