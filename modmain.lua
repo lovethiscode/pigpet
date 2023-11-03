@@ -76,6 +76,7 @@ AddSimPostInit(function(inst)
 end)
 
 local cooking = GLOBAL.require("cooking")
+local cookbook = GLOBAL.require("widget/cookbook")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
     if key == GLOBAL.KEY_F3 and not down then
@@ -104,35 +105,22 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
                 return true
             end
         end
-    elseif key == GLOBAL.KEY_F4 and not down then
-        --获取饥荒中所有的食材
-        local content = "\n-----------------原料------------------------\n"
-        local count = 0
-        --枚举 原料
-        for name, v in pairs(cooking.ingredients) do
-             content = content .. tostring(GLOBAL.STRINGS.NAMES[string.upper(name)]) .. "(" .. name .. ")\n"
-             if v.tags then              
-                 for tag, tagval in pairs(v.tags) do
-                     content = content .. tag .. ":" .. tostring(tagval) .. "\t"
-                 end
-             end
-             count =  count + 1
-             content = content .. "\n\n"
+    elseif key == GLOBAL.KEY_F4 and not down then       
+        local screen = TheFrontEnd:GetActiveScreen()
+        -- End if we can't find the screen name (e.g. asleep)
+        if not screen or not screen.name then return true end
+        -- If the hud exists, open the UI
+        if screen.name:find("HUD") then
+            -- We want to pass in the (clientside) player entity
+           
+            print("cookbook:" .. tostring(cookbook))
+            TheFrontEnd:PushScreen(cookbook())
+            return true
+        else
+            -- If the screen is already open, close it
+            if screen.name == "cookbook" then
+                screen:Close()
+            end
         end
-        --枚举食谱
-        content = content .. "总计食材:" .. tostring(count) .. "\n-----------------食谱------------------------\n"
-        count = 0
-        for cooker, v in pairs(cooking.recipes) do
-             --便携锅， 普通锅
-             content = content .. cooker .. "\n"
-             --每种锅可烹饪的所有食物
-             for name, recipe in pairs(v) do
-                count = count + 1
-                content = content .. tostring(GLOBAL.STRINGS.NAMES[string.upper(name)]) .. "("..  name .. "):" .. " foodtype:" .. tostring(recipe.foodtype) .. " health:" .. tostring(recipe.health) .. " hunger:" .. tostring(recipe.hunger) .. " sanity:" .. tostring(recipe.sanity) .. " \n\n"
-             end
-             content = content .. "\n"
-        end
-        content = content .. "总计食物:" .. tostring(count)
-        TheSim:SetPersistentString("console_history.txt", content)	
     end
 end)    
