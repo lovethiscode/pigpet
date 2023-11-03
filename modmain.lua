@@ -76,6 +76,7 @@ AddSimPostInit(function(inst)
 end)
 
 local cooking = GLOBAL.require("cooking")
+local cookbook = GLOBAL.require("widget/cookbook")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
     if key == GLOBAL.KEY_F3 and not down then
@@ -102,6 +103,23 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
                     k.components.container:Open(player)
                 end
                 return true
+            end
+        end
+    elseif key == GLOBAL.KEY_F4 and not down then       
+        local screen = TheFrontEnd:GetActiveScreen()
+        -- End if we can't find the screen name (e.g. asleep)
+        if not screen or not screen.name then return true end
+        -- If the hud exists, open the UI
+        if screen.name:find("HUD") then
+            -- We want to pass in the (clientside) player entity
+           
+            print("cookbook:" .. tostring(cookbook))
+            TheFrontEnd:PushScreen(cookbook())
+            return true
+        else
+            -- If the screen is already open, close it
+            if screen.name == "cookbook" then
+                screen:Close()
             end
         end
     end
