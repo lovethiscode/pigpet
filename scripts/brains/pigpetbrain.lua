@@ -30,9 +30,9 @@ local function StartChoppingCondition(inst)
     return inst.components.follower.leader
 end
 
-local KEEP_CHOPPING_DIST = 15
+local KEEP_DIST = 10
 local function KeepChoppingAction(inst)
-    return inst.components.follower.leader and inst.components.follower.leader:GetDistanceSqToInst(inst) <= KEEP_CHOPPING_DIST*KEEP_CHOPPING_DIST
+    return inst.components.follower.leader and inst.components.follower.leader:GetDistanceSqToInst(inst) <= KEEP_DIST*KEEP_DIST
 end
 
 
@@ -40,9 +40,8 @@ local function GetLeader(inst)
     return inst.components.follower.leader 
 end
 
-local SEE_TREE_DIST = 15
 local function FindTreeToChopAction(inst)
-    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) return item.components.workable and item.components.workable.action == ACTIONS.CHOP end)
+    local target = FindEntity(inst.components.follower.leader, KEEP_DIST, function(item) return item.components.workable and item.components.workable.action == ACTIONS.CHOP end)
     if target then
         return BufferedAction(inst, target, ACTIONS.CHOP)
     end
@@ -50,7 +49,7 @@ end
 
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
-    return FindEntity(inst, SEE_TREE_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
+    return FindEntity(inst, KEEP_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
 end
 
 local function DoPickableTarget(inst)
@@ -64,7 +63,7 @@ end
 
 --采集 树枝， 浆果等
 local function GetPickTarget(inst)
-    local target = FindEntity(inst.components.follower.leader, SEE_TREE_DIST, function(item) 
+    local target = FindEntity(inst.components.follower.leader, KEEP_DIST, function(item) 
         if item.components.pickable and item.components.pickable:CanBePicked() then
             local prefb_name = Pigpet.pick_prefeb[item.prefab]
             if prefb_name then
@@ -85,7 +84,7 @@ local function  DoPickTarget(inst)
 end
 
 local function HasPickTarget(inst)
-    local target = FindEntity(inst, SEE_TREE_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
+    local target = FindEntity(inst, KEEP_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
     return target ~= nil and KeepChoppingAction(inst)
 end
 
@@ -97,9 +96,15 @@ function PigpetBrain:OnStart()
             WhileNode( function() return self.inst.components.combat.target ~= nil end, "AttackMomentarily",
                     ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST) ),
             --可直接拾取
-            IfNode(function() return GetPickableTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup",  DoAction(self.inst, DoPickableTarget)),
+            IfNode(function() return GetPickableTarget(self.inst) end, "pickup", 
+                WhileNode(function() return GetPickableTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup", 
+                    DoAction(self.inst, DoPickableTarget))),
+
             --采集
-            IfNode(function() return GetPickTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup",  DoAction(self.inst, DoPickTarget)),
+            IfNode(function() return GetPickTarget(self.inst) end, "pickupable", 
+                WhileNode(function() return GetPickTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickupable", 
+                    DoAction(self.inst, DoPickTarget))),
+
             IfNode(function() return StartChoppingCondition(self.inst) end, "chop", 
                 WhileNode(function() return KeepChoppingAction(self.inst) end, "keep chopping", 
                     DoAction(self.inst, FindTreeToChopAction))),

@@ -87,9 +87,6 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         pig:SetStateGraph("SGpigpet")
         --设置brain
         pig:SetBrain(GLOBAL.require "brains/pigpetbrain")
-    elseif key == GLOBAL.KEY_F2 and not down then
-       local autoCook = GLOBAL.require "autocook"
-       autoCook.GetCookbook()
     elseif key == GLOBAL.KEY_F1 and not down then
         --获取玩家的跟随者
         local player = GLOBAL.GetPlayer()
@@ -105,7 +102,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
                 return true
             end
         end
-    elseif key == GLOBAL.KEY_F4 and not down then       
+    elseif key == GLOBAL.KEY_F2 and not down then       
         local screen = TheFrontEnd:GetActiveScreen()
         -- End if we can't find the screen name (e.g. asleep)
         if not screen or not screen.name then return true end
