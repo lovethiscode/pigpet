@@ -1,7 +1,7 @@
 require "behaviours/wander"
 local MIN_FOLLOW_DIST = 0
 local MAX_FOLLOW_DIST = 5
-local TARGET_FOLLOW_DIST = 7
+local TARGET_FOLLOW_DIST = 10
 local MAX_WANDER_DIST = 3
 
 local PigpetBrain = Class(Brain, function(self, inst)
@@ -30,9 +30,9 @@ local function StartChoppingCondition(inst)
     return inst.components.follower.leader
 end
 
-local KEEP_DIST = 10
+
 local function KeepChoppingAction(inst)
-    return inst.components.follower.leader and inst.components.follower.leader:GetDistanceSqToInst(inst) <= KEEP_DIST*KEEP_DIST
+    return inst.components.follower.leader and inst.components.follower.leader:GetDistanceSqToInst(inst) <= TARGET_FOLLOW_DIST*TARGET_FOLLOW_DIST
 end
 
 
@@ -41,7 +41,7 @@ local function GetLeader(inst)
 end
 
 local function FindTreeToChopAction(inst)
-    local target = FindEntity(inst.components.follower.leader, KEEP_DIST, function(item) return item.components.workable and item.components.workable.action == ACTIONS.CHOP end)
+    local target = FindEntity(inst.components.follower.leader, TARGET_FOLLOW_DIST, function(item) return item.components.workable and item.components.workable.action == ACTIONS.CHOP end)
     if target then
         return BufferedAction(inst, target, ACTIONS.CHOP)
     end
@@ -49,7 +49,7 @@ end
 
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
-    return FindEntity(inst, KEEP_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
+    return FindEntity(inst, TARGET_FOLLOW_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
 end
 
 local function DoPickableTarget(inst)
@@ -63,7 +63,7 @@ end
 
 --采集 树枝， 浆果等
 local function GetPickTarget(inst)
-    local target = FindEntity(inst.components.follower.leader, KEEP_DIST, function(item) 
+    local target = FindEntity(inst.components.follower.leader, TARGET_FOLLOW_DIST, function(item) 
         if item.components.pickable and item.components.pickable:CanBePicked() then
             local prefb_name = Pigpet.pick_prefeb[item.prefab]
             if prefb_name then
@@ -84,7 +84,7 @@ local function  DoPickTarget(inst)
 end
 
 local function HasPickTarget(inst)
-    local target = FindEntity(inst, KEEP_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
+    local target = FindEntity(inst, TARGET_FOLLOW_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
     return target ~= nil and KeepChoppingAction(inst)
 end
 

@@ -436,11 +436,28 @@ local function CreateDamageIndicator(inst, amount)
 	end)
 end
 
+local function ShowHealthBar(inst)
+	--非角色， 并且有生命组件的
+	if inst:HasTag("player") or not inst.components.health then
+		return
+	end
+	local label = inst.entity:AddLabel()
+	label:SetFont(GLOBAL.NUMBERFONT)
+	label:SetFontSize(20)
+	label:SetText(string.format("%d/%d", inst.components.health.currenthealth, inst.components.health:GetMaxHealth()))
+	--将label 的位置设置在inst 的上方
+	label:SetPos(0, 0, 0)
+	--启动0.5秒的定时器更新生命值
+	inst:DoPeriodicTask(0.5, function()
+		label:SetText(string.format("%d/%d", inst.components.health.currenthealth, inst.components.health:GetMaxHealth()))
+	end)
+end
+
 AddComponentPostInit("health", function(Health, inst)
+	ShowHealthBar(inst)
 	inst:ListenForEvent("healthdelta", function(inst, data)
 	  if inst.components.health then
-		local amount = (data.newpercent - data.oldpercent) * inst.components.health.maxhealth
-		print(amount)
+		local amount = (data.newpercent - data.oldpercent) * inst.components.health:GetMaxHealth()
 		if math.abs(amount) > 0.99 then
 			CreateDamageIndicator(inst, amount)
 		end
@@ -448,3 +465,6 @@ AddComponentPostInit("health", function(Health, inst)
 	end)
   end)
   
+  
+
+
