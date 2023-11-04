@@ -3,13 +3,15 @@ local Widget = require "widgets/widget"
 local Text = require "widgets/text"
 local ImageButton = require "widgets/imagebutton"
 local CookBookItem = require "widgets/cookbookitem"
-
+local autoCook = require "autocook"
 
 local showMaxRow = 3
 local cookbookitemHeight = 180
 
 local CookBook = Class(Screen, function(self, inst)
     self.inst = inst
+    self.currentRow = 0
+    self.totalRow = 0
     Screen._ctor(self, "CookBook")
     --画一个背景
     self.background = self:AddChild(Image("images/global.xml", "square.tex"))
@@ -19,7 +21,7 @@ local CookBook = Class(Screen, function(self, inst)
     self.background:SetHAnchor(ANCHOR_MIDDLE)
     self.background:SetScaleMode(SCALEMODE_FILLSCREEN)
 
-    self.background:SetTint(0, 0, 0, .5)
+    self.background:SetTint(0, 0, 0, .3)
     --添加一个根节点
     self.proot = self:AddChild(Widget("root"))
     self.proot:SetVAnchor(ANCHOR_MIDDLE)
@@ -28,10 +30,14 @@ local CookBook = Class(Screen, function(self, inst)
     self.proot:SetPosition(20, 0, 0)
     self.proot:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
-    self.title = self.proot:AddChild(Text(DEFAULTFONT, 40, "烹饪书"))
-    self.title:SetPosition(0, 250)
+    self.title = self.proot:AddChild(Text(DEFAULTFONT, 40, "可烹饪的食物"))
+    self.title:SetPosition(0, 300)
 
-    self:AddCookbookItem()
+    --放置可烹饪的食物
+    self.disasters = self.proot:AddChild(Widget("ROOT"))
+    self.disasters:SetPosition(-100, 0)
+
+    self:Refresh()
     self:SetupUpDownButton()
   end)
   
@@ -70,24 +76,6 @@ function CookBook:ScrollUp()
   end
 end
 
-function CookBook:AddCookbookItem()
-  self.disasters = self.proot:AddChild(Widget("ROOT"))
-  self.disasters:SetPosition(-100, 0)
-  self.cookbookitems = {}
-  self.currentRow = 1
-  self.totalRow = 1
-  local column = 1
-  
-  for i=1, 50 do
-    table.insert(self.cookbookitems, self.disasters:AddChild(CookBookItem(i, (column - 3) * cookbookitemHeight, (2 - self.totalRow) * cookbookitemHeight, 0.8)))
-    column = column + 1
-    if column > 6 then
-      column = 1
-      self.totalRow = self.totalRow + 1
-    end
-  end
-end
-
 function CookBook:Close()
   local screen = TheFrontEnd:GetActiveScreen()
   -- Don't pop the HUD
@@ -97,6 +85,36 @@ function CookBook:Close()
   end
   --关闭的时候播放个声音
   TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+end
+
+function CookBook:Refresh()
+  --先移除 cookbookitems
+  if self.cookbookitems then
+    for _, v in ipairs(self.cookbookitems) do
+      v:Kill()
+    end
+  end
+
+  --刷新
+  local productResult = autoCook()
+  self.cookbookitems = {}
+  self.currentRow = 1
+  self.totalRow = 1
+  local column = 1
+  
+  local hasFood = false
+  for k, v in pairs(productResult) do
+    table.insert(self.cookbookitems, self.disasters:AddChild(CookBookItem(self, v , (column - 3) * cookbookitemHeight, (2 - self.totalRow) * cookbookitemHeight, 0.8)))
+    column = column + 1
+    if column > 6 then
+      column = 1
+      self.totalRow = self.totalRow + 1
+    end
+    hasFood = true
+  end
+  if not hasFood then
+    self.title:SetString("没有可烹饪的食物")
+  end
 end
 
 return CookBook
