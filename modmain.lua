@@ -63,6 +63,11 @@ local function CreatePigpetIfnot()
 end
 
 local function ShowFullMap(inst)
+    --读取 show_global_map 配置，判断是否开启地图
+    local show_global_map = GetModConfigData("show_global_map")
+    if not show_global_map then
+        return
+    end
     inst:DoTaskInTime( 0.001, function() 
         minimap = TheSim:FindFirstEntityWithTag("minimap")
         minimap.MiniMap:ShowArea(0,0,0,40000)
@@ -74,6 +79,7 @@ AddSimPostInit(function(inst)
    CreatePigpetIfnot()
    ShowFullMap(inst)
 end)
+
 
 local cooking = GLOBAL.require("cooking")
 local cookbook = GLOBAL.require("widgets/cookbook")

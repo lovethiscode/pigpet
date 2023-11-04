@@ -352,3 +352,99 @@ function Text:GetStringAdd()
 		return ""
 	end
 end
+
+
+
+
+local function CreateLabel(inst, parent)
+	inst.persists = false
+	if not inst.Transform then
+	  inst.entity:AddTransform()
+	end
+	inst.Transform:SetPosition(parent.Transform:GetWorldPosition() )
+  
+	return inst
+  end
+--伤害显示
+
+local HEALTH_LOSE_COLOR = {
+	r = 0.7,
+	g = 0,
+	b = 0
+  }
+local HEALTH_GAIN_COLOR = {
+	r = 0,
+	g = 0.7,
+	b = 0
+  }
+
+local LIFT_ACC = 0.003
+
+local LABEL_TIME_DELTA = 0.05
+local function CreateDamageIndicator(inst, amount)
+	local labelEntity = CreateLabel(GLOBAL.CreateEntity(), inst)
+	local label = labelEntity.entity:AddLabel()
+	label:SetFont(GLOBAL.NUMBERFONT)
+	label:SetFontSize(70)
+	label:SetPos(0, 4, 0)
+	local color
+	if amount < 0 then
+		color = HEALTH_LOSE_COLOR
+	else
+		color = HEALTH_GAIN_COLOR
+	end
+	label:SetColour(color.r, color.g, color.b)
+	label:SetText(string.format("%d", amount))
+
+	labelEntity:StartThread(function()
+		local t = 0
+		local ddy = 0.0
+		local dy = 0.05
+		local side = 0
+		local dside = 0.0
+		local ddside = 0.0
+		local t_max = 0.5
+		local y = 4
+		while labelEntity:IsValid() and t < t_max do
+  		 
+		-- waving upon mode ------------------
+		ddy = LIFT_ACC * (math.random() * 0.5 + 0.5)
+		dy = dy + ddy
+		y = y + dy
+
+		ddside = -side * math.random()* 0.15
+		dside = dside + ddside
+		side = side + dside
+
+  
+		  local headingtarget = 45 --[[TheCamera.headingtarget]] % 180
+		  if headingtarget == 0 then
+			label:SetPos(0, y, 0)  		-- from 3d plane x = 0
+		  elseif headingtarget == 45 then
+			label:SetPos(side, y, 0)	-- from 3d plane x + z = 0
+		  elseif headingtarget == 90 then
+			label:SetPos(side, y, 0)		-- from 3d plane z = 0
+		  elseif headingtarget == 135 then
+			label:SetPos(side, y, 0)		-- from 3d plane z - x = 0
+		  end
+		  t = t + LABEL_TIME_DELTA
+		  label:SetFontSize(70 * math.sqrt(1 - t / t_max))
+		  GLOBAL.Sleep(LABEL_TIME_DELTA)
+		end
+  
+		labelEntity:Remove()
+	end)
+end
+
+AddComponentPostInit("health", function(Health, inst)
+	inst:ListenForEvent("healthdelta", function(inst, data)
+	  if inst.components.health then
+		local amount = (data.newpercent - data.oldpercent) * inst.components.health.maxhealth
+		print(amount)
+		if math.abs(amount) > 0.99 then
+			CreateDamageIndicator(inst, amount)
+		end
+	  end
+	end)
+  end)
+  

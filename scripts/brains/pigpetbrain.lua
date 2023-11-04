@@ -93,23 +93,20 @@ local MAX_CHASE_TIME = 10
 local MAX_CHASE_DIST = 30
 function PigpetBrain:OnStart()
     local root = PriorityNode ({
-            WhileNode( function() return self.inst.components.combat.target ~= nil end, "AttackMomentarily",
+            WhileNode( function() return self.inst.components.combat.target ~= nil and KeepChoppingAction(self.inst) end, "AttackMomentarily",
                     ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST) ),
             --可直接拾取
-            IfNode(function() return GetPickableTarget(self.inst) end, "pickup", 
-                WhileNode(function() return GetPickableTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup", 
-                    DoAction(self.inst, DoPickableTarget))),
+            WhileNode(function() return GetPickableTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickup", 
+                DoAction(self.inst, DoPickableTarget)),
 
             --采集
-            IfNode(function() return GetPickTarget(self.inst) end, "pickupable", 
-                WhileNode(function() return GetPickTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickupable", 
-                    DoAction(self.inst, DoPickTarget))),
+            WhileNode(function() return GetPickTarget(self.inst) and KeepChoppingAction(self.inst) end, "keep pickupable", 
+                DoAction(self.inst, DoPickTarget)),
 
             IfNode(function() return StartChoppingCondition(self.inst) end, "chop", 
                 WhileNode(function() return KeepChoppingAction(self.inst) end, "keep chopping", 
                     DoAction(self.inst, FindTreeToChopAction))),
             Follow(self.inst, GetLeader, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
-            FaceEntity(self.inst, GetFaceTargetFn, KeepFaceTargetFn),
             Wander(self.inst, GetPlayerPosition, MAX_WANDER_DIST)
         },0.25)
 
