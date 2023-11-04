@@ -74,7 +74,7 @@ local function CollectIngredient(container, result)
   end
 end
 
-local function GetCanCook()
+local function GetCookFood()
     local player = GetPlayer()
     local Ingredients = {}
     --收集角色的食材
@@ -93,5 +93,61 @@ local function GetCanCook()
     return productResult
 end
 
+--枚举所有的食谱
+function CanCookFood2(selectedIngredient)
+  if #selectedIngredient ~= SELECTED_COUNT then
+      return false
+  end
+  
+  return cooking.CalculateRecipe("cookpot", selectedIngredient)
+end
 
-return GetCanCook
+function SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
+  if not productResult[product] then
+    productResult[product] = {}
+    productResult[product].cooktime = cooktime
+    productResult[product].recipe = cooking.recipes["cookpot"][product]
+    productResult[product].ingredients = {}
+  end
+
+  local cooktable = {}
+  --拷贝一份selectedIngredient
+  for _, item in ipairs(selectedIngredient) do
+    table.insert(cooktable, item)
+  end
+
+  table.insert(productResult[product].ingredients, cooktable)
+end
+
+function FindCookIngredient2(selectedIngredient, start, n, nodes, productResult)
+  local product, cooktime = CanCookFood2(selectedIngredient) 
+  if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
+      SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
+  end
+  if n == 0 or start > #nodes then
+      return
+  end
+
+  for i = start, #nodes do
+      table.insert(selectedIngredient, nodes[i])
+      FindCookIngredient2(selectedIngredient, i, n - 1, nodes, productResult)
+      table.remove(selectedIngredient)
+  end
+end
+
+local function GetCookbook2()
+  local ingredients = {}
+  for name, _ in pairs(cooking.ingredients) do
+    --放入到食材列表中
+    table.insert(ingredients, name)
+    if #ingredients >= 20 then
+      break
+    end
+  end
+  print("ingredients count:" .. #ingredients)
+  local productResult = {}
+  FindCookIngredient2({}, 1, SELECTED_COUNT, ingredients, productResult)
+  return productResult
+end
+
+return {GetCookFood = GetCookFood, GetCookbook2 = GetCookbook2}

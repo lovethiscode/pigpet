@@ -89,7 +89,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         pig:SetBrain(GLOBAL.require "brains/pigpetbrain")
     elseif key == GLOBAL.KEY_F2 and not down then
        local autoCook = GLOBAL.require "autocook"
-       autoCook()
+       autoCook.GetCookbook()
     elseif key == GLOBAL.KEY_F1 and not down then
         --获取玩家的跟随者
         local player = GLOBAL.GetPlayer()

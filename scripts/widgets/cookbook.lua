@@ -96,7 +96,7 @@ function CookBook:Refresh()
   end
 
   --刷新
-  local productResult = autoCook()
+  local productResult = autoCook.GetCookFood()
   self.cookbookitems = {}
   self.currentRow = 1
   self.totalRow = 1
