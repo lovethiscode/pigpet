@@ -1,5 +1,5 @@
 name = "宠物" -- mod的名称
-description = "宠物可以帮你做什么事情，砍树，战斗，采集...\n五格装备栏  显示物品信息  显示伤害数值  \nF1: 打开背包\nF2: 打开烹饪界面" -- mod的描述
+description = "自动砍树，战斗，采集...\n五格装备栏  物品信息  伤害数值 简易血条 永久保鲜 全图\nF1: 打开背包 F2: 一键烹饪 F3: 禁用宠物" -- mod的描述
 author = "Your Name" -- 作者名字
 version = "1.0.0" -- mod的版本号
 
@@ -28,5 +28,6 @@ configuration_options = {
         },
         default = true,
     },
+
 }
 

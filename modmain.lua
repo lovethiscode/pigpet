@@ -11,7 +11,7 @@ GLOBAL.Pigpet.pick_prefeb = {
 PrefabFiles = {
     "pigpet"
 }
-
+GLOBAL.Pigpet.Enable = true
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
@@ -85,7 +85,7 @@ local cooking = GLOBAL.require("cooking")
 local cookbook = GLOBAL.require("widgets/cookbook")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
-    if key == GLOBAL.KEY_F3 and not down then
+    if key == GLOBAL.KEY_F4 and not down then
         local pig = GLOBAL.SpawnPrefab("pigman")
         pig.Transform:SetPosition(GLOBAL.GetPlayer().Transform:GetWorldPosition())
         pig.components.follower:SetLeader(GLOBAL.GetPlayer())
@@ -123,6 +123,12 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
             if screen.name == "CookBook" then
                 screen:Close()
             end
+        end
+    elseif key == GLOBAL.KEY_F3 and not down then     
+        if GLOBAL.Pigpet.Enable then
+            GLOBAL.Pigpet.Enable = false
+        else
+            GLOBAL.Pigpet.Enable = true
         end
     end
 end)    
