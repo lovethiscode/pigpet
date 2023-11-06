@@ -28,6 +28,17 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 						if domestication ~= 0 then
 							str = str.."\n饥饿: "..round2(hunger).."\n顺从: "..round2(obedience*100,0).."%".."\n驯服: "..round2(domestication*100,0).."%"
 						end
+						for k,v in pairs(target.components.domesticatable.tendencies) do
+							local ten = "默认"
+							if k == GLOBAL.TENDENCY.ORNERY then
+								ten = "暴躁"
+							elseif k == GLOBAL.TENDENCY.RIDER then
+								ten = "骑手"
+							elseif k == GLOBAL.TENDENCY.PUDGY then
+								ten = "胖乎乎"
+							end
+							str = str .. string.format("\n %s:%.2f", ten, v)
+						end
 					end
 				end
 				--距离成长时间：树枝、草、浆果、咖啡树
@@ -472,3 +483,53 @@ AddComponentPostInit("health", function(Health, inst)
 	  local minimap = inst.entity:AddMiniMapEntity()
 	  minimap:SetIcon( inst.prefab .. ".tex" )
   end)
+
+local Widget = GLOBAL.require('widgets/widget')
+local Image = GLOBAL.require('widgets/image')
+local Text = GLOBAL.require('widgets/text')
+local function BadgePostConstruct(self)
+	self:SetScale(.9,.9,.9)
+	
+	self.bg = self:AddChild(Image("images/status_bgs.xml", "status_bgs.tex"))
+	self.bg:SetScale(.4,.43,0)
+	self.bg:SetPosition(-.5, -40, 0)
+	
+	self.num:SetFont(GLOBAL.NUMBERFONT)
+	self.num:SetSize(28)
+	self.num:SetPosition(3.5, -40.5, 0)
+	self.num:SetScale(1,.78,1)
+
+	self.num:MoveToFront()
+	self.num:Show()
+
+	self.maxnum = self:AddChild(Text(GLOBAL.NUMBERFONT, 25))
+	self.maxnum:SetPosition(6, 0, 0)
+	self.maxnum:MoveToFront()
+	self.maxnum:Hide()
+	
+	local OldOnGainFocus = self.OnGainFocus
+	function self:OnGainFocus()
+		OldOnGainFocus(self)
+		self.maxnum:Show()
+	end
+
+	local OldOnLoseFocus = self.OnLoseFocus
+	function self:OnLoseFocus()
+		OldOnLoseFocus(self)
+		self.maxnum:Hide()
+		self.num:Show()
+	end
+	
+	-- for health/hunger/sanity/beaverness
+	local maxtxt = "Max:\n"
+	local OldSetPercent = self.SetPercent
+	if OldSetPercent then
+		function self:SetPercent(val, max, ...)
+			self.maxnum:SetString(maxtxt..tostring(math.ceil(max or 100)))
+			OldSetPercent(self, val, max, ...)
+		end
+	end
+	
+end
+
+AddClassPostConstruct("widgets/badge", BadgePostConstruct)
