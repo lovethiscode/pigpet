@@ -1,8 +1,6 @@
 
 local assets = {
 	Asset("ANIM", "anim/ui_portablecellar.zip"),
-    Asset("IMAGE", "images/recipe_hud.tex"),
-	Asset("ATLAS", "images/recipe_hud.xml"),
 }
 
 

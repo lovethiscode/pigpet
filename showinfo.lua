@@ -465,6 +465,10 @@ AddComponentPostInit("health", function(Health, inst)
 	end)
   end)
   
+
+  AddMinimapAtlas("images/beefalo.xml")
   
-
-
+  AddPrefabPostInit("beefalo", function(inst)
+	  local minimap = inst.entity:AddMiniMapEntity()
+	  minimap:SetIcon( inst.prefab .. ".tex" )
+  end)

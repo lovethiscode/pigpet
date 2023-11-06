@@ -1,10 +1,3 @@
-Assets =
-{
-	Asset("IMAGE", "images/slots5.tex"),
-	Asset("ATLAS", "images/slots5.xml"),
-}
-
-
 --增加两个物品栏
 GLOBAL.EQUIPSLOTS.BACK = "back"
 GLOBAL.EQUIPSLOTS.NECK = "neck"

@@ -1,5 +1,15 @@
 GLOBAL.Pigpet = {}
 
+Assets = 
+{
+    Asset("IMAGE", "images/recipe_hud.tex"),
+	Asset("ATLAS", "images/recipe_hud.xml"),
+        Asset( "IMAGE", "images/beefalo.tex" ),
+        Asset( "ATLAS", "images/beefalo.xml" ),
+        Asset("IMAGE", "images/slots5.tex"),
+	Asset("ATLAS", "images/slots5.xml"),
+}
+
 GLOBAL.Pigpet.pick_prefeb = {
     sapling = "twigs",
     flower = "petals",

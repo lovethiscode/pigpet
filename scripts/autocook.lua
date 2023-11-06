@@ -1,7 +1,7 @@
 local cooking = require("cooking")
 local SELECTED_COUNT = 4
 
-function create_node(inst, count)
+local function create_node(inst, count)
     return {
         inst = inst,
         count = count
@@ -9,7 +9,7 @@ function create_node(inst, count)
 end
 
 --判断是否可以烹饪出食物
-function CanCookFood(selectedIngredient)
+local function CanCookFood(selectedIngredient)
     if #selectedIngredient ~= SELECTED_COUNT then
         return false
     end
@@ -20,7 +20,7 @@ function CanCookFood(selectedIngredient)
     return cooking.CalculateRecipe("cookpot", ings)
 end
 
-function SaveCookProduct(selectedIngredient, product, cooktime, productResult)
+local function SaveCookProduct(selectedIngredient, product, cooktime, productResult)
   if not productResult[product] then
     local cooktable = {}
     cooktable.selectedIngredient = {}
@@ -35,7 +35,7 @@ function SaveCookProduct(selectedIngredient, product, cooktime, productResult)
   end
 end
 
-function FindCookIngredient(selectedIngredient, start, n, nodes, productResult)
+local function FindCookIngredient(selectedIngredient, start, n, nodes, productResult)
     local product, cooktime = CanCookFood(selectedIngredient) 
     if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
         SaveCookProduct(selectedIngredient, product, cooktime, productResult)
@@ -94,7 +94,7 @@ local function GetCookFood()
 end
 
 --枚举所有的食谱
-function CanCookFood2(selectedIngredient)
+local function CanCookFood2(selectedIngredient)
   if #selectedIngredient ~= SELECTED_COUNT then
       return false
   end
@@ -102,7 +102,7 @@ function CanCookFood2(selectedIngredient)
   return cooking.CalculateRecipe("cookpot", selectedIngredient)
 end
 
-function SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
+local function SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
   if not productResult[product] then
     productResult[product] = {}
     productResult[product].cooktime = cooktime
@@ -119,7 +119,7 @@ function SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
   table.insert(productResult[product].ingredients, cooktable)
 end
 
-function FindCookIngredient2(selectedIngredient, start, n, nodes, productResult)
+local function FindCookIngredient2(selectedIngredient, start, n, nodes, productResult)
   local product, cooktime = CanCookFood2(selectedIngredient) 
   if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
       SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
