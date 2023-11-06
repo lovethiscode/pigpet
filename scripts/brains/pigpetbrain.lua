@@ -1,14 +1,14 @@
 require "behaviours/wander"
+
 local MIN_FOLLOW_DIST = 2
---这是实体停止跟随领导者的最大距离。如果实体与领导者的距离大于这个值，实体将开始跑步，直到达到领导者的位置
-local MAX_FOLLOW_DIST = 10
---这是实体希望与领导者保持的理想距离。实体将试图移动到这个距离的位置。
-local TARGET_FOLLOW_DIST = 2
+local TARGET_FOLLOW_DIST = 5
+local MAX_FOLLOW_DIST = 11
+local MAX_WANDER_DIST = 3
+
 
 --搜索附近可采集物品的距离
-local PICK_TARGET_DIST = 9
+local PICK_TARGET_DIST = 10
 
-local MAX_WANDER_DIST = 3
 
 local PigpetBrain = Class(Brain, function(self, inst)
     Brain._ctor(self, inst)

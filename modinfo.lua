@@ -1,5 +1,5 @@
 name = "宠物" -- mod的名称
-description = "自动砍树，战斗，采集...\n五格装备栏  物品信息  伤害数值 简易血条 永久保鲜 全图 物品整理\nF1: 打开背包 F2: 一键烹饪 F3: 禁用宠物" -- mod的描述
+description = "自动砍树，战斗，采集...\n五格装备栏  物品信息  伤害数值 简易血条 永久保鲜 全图 显示状态\nF1: 打开背包 F2: 一键烹饪 F3: 禁用宠物" -- mod的描述
 author = "Your Name" -- 作者名字
 version = "1.0.0" -- mod的版本号
 
@@ -8,8 +8,11 @@ forumthread = ""
 api_version = 6
 api_version_dst = 10
 
+reign_of_giants_compatible = true
+shipwrecked_compatible = true
 dont_starve_compatible = true
-dst_compatible = true
+
+hamlet_compatible = true
 all_clients_require_mod = false
 
 --mod 图标配置

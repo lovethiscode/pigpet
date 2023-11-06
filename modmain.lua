@@ -18,6 +18,12 @@ GLOBAL.Pigpet.pick_prefeb = {
     grass = "cutgrass",
     carrot_planted = "carrot",
     berrybush = "berries",
+    asparagus_planted = "asparagus",
+    radish_planted = "radish",
+    flower_rainforest = "petals",
+    rock_flippable = "rocks",
+    dungpile = "poop",
+    aloe_planted = "aloe",
 }
 --声明预制物
 PrefabFiles = {
