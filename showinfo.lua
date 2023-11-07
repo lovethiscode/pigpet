@@ -31,11 +31,11 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 						for k,v in pairs(target.components.domesticatable.tendencies) do
 							local ten = "默认"
 							if k == GLOBAL.TENDENCY.ORNERY then
-								ten = "暴躁"
+								ten = "攻击牛"
 							elseif k == GLOBAL.TENDENCY.RIDER then
-								ten = "骑手"
+								ten = "骑牛"
 							elseif k == GLOBAL.TENDENCY.PUDGY then
-								ten = "胖乎乎"
+								ten = "宠物牛"
 							end
 							str = str .. string.format("\n %s:%.2f", ten, v)
 						end
@@ -47,7 +47,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 				end
 				--距离成长时间：藤蔓、竹林
 				if target.components.hackable and target.components.hackable.targettime then
-				str = str..GROW..tostring(math.ceil((target.components.hackable.targettime - GLOBAL.GetTime())/48)/10).." 天"
+				str = str.."\n距离成长: "..tostring(math.ceil((target.components.hackable.targettime - GLOBAL.GetTime())/48)/10).." 天"
 				end
 				--树苗
 				if target.components.deployable and target.growtime then

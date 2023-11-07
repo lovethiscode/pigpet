@@ -111,13 +111,8 @@ local function fn()
     inst:AddComponent("container")
     local slotpos = {}
     local x_offset = (-72-72-40-2)*2
-    for z = 1,3 do
-        for y = 1.5,-1.5,-1 do
-            for x = -2,2 do
-                table.insert(slotpos, Vector3(72*x +x_offset, 72*y +2+40+72+36, 0))
-            end
-        end
-        for y = 1.5,-1.5,-1 do
+    for z = 1,4 do
+        for y = 0.5,-1.5,-1 do
             for x = -2,2 do
                 table.insert(slotpos, Vector3(72*x +x_offset, 72*y -2-40-72-36, 0))
             end
@@ -128,8 +123,8 @@ local function fn()
     inst.components.container:SetNumSlots(#slotpos)      
     inst.components.container.widgetslotpos = slotpos
     inst.components.container.widgetanimbank = "ui_chest_3x3"
-    inst.components.container.widgetanimbuild = "ui_portablecellar"
-    inst.components.container.widgetpos = Vector3(0, -200, 0)
+   -- inst.components.container.widgetanimbuild = "ui_portablecellar"
+    inst.components.container.widgetpos = Vector3(-100, -285, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
 
@@ -138,7 +133,7 @@ local function fn()
     inst:ListenForEvent("itemlose", OnItemLose)
     inst.components.container.itemtestfn = itemtest]]
 
-    local widgetbuttoninfo = {
+    --[[local widgetbuttoninfo = {
         text = "关闭",
         position = Vector3(0, -330, 0),
         fn = function(inst)
@@ -149,7 +144,7 @@ local function fn()
         end,
     }
     --添加一个关闭按钮
-    inst.components.container.widgetbuttoninfo = widgetbuttoninfo
+    inst.components.container.widgetbuttoninfo = widgetbuttoninfo--]]
 
     --添加growth 组件
     inst:AddComponent("growth")

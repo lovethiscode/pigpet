@@ -27,7 +27,8 @@ GLOBAL.Pigpet.pick_prefeb = {
 }
 --声明预制物
 PrefabFiles = {
-    "pigpet"
+    "pigpet",
+    "mybackpack"
 }
 GLOBAL.Pigpet.Enable = true
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
