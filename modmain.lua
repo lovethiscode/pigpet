@@ -28,11 +28,17 @@ GLOBAL.Pigpet.pick_prefeb = {
 --声明预制物
 PrefabFiles = {
     "pigpet",
-    "mybackpack"
+    "mybackpack",
+    "pigpetfood"
 }
 GLOBAL.Pigpet.Enable = true
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
+
+GLOBAL.STRINGS.NAMES.PIGPETFOOD = "宠物饲料"
+GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPETFOOD = "这是给宠物吃的，可以恢复生命值"
+
+
 
 modimport("showinfo.lua")
 modimport("extraequipment.lua")

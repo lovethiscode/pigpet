@@ -143,7 +143,7 @@ local function GetDesc(item)
 		str = str .."\n代码: ".. tostring(item.prefab)
 	end
 	--食物属性：三维回复效果
-	if ic.edible and GLOBAL.GetPlayer().components.eater:AbleToEat(item) then
+	if ic.edible then
         local hunger = roundsg(ic.edible:GetHunger(item))
         local health = roundsg(ic.edible:GetHealth(item))
         local sanity = roundsg(ic.edible:GetSanity(item))

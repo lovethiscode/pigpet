@@ -24,11 +24,6 @@ local Growth = Class(function(self, inst)
     self.currentmaxexp = 100
     --启动一个循环定时任务
     self.inst:DoPeriodicTask(1, function() self:AddExp(Pigpet.pick_prefeb.time_exp) end)
-    --攻击力
-    self.attack = 5
-    --生命值
-    self.maxhealth = 20
-    self.currenthealth = 20
 end)
 
 
@@ -50,14 +45,11 @@ end
 
 function Growth:HandleUpgrade()
     --每次升级增加1点攻击力
-    self.attack = self.attack + Pigpet.pick_prefeb.attack
-    self.inst.components.combat.defaultdamage = self.attack
+    self.inst.components.combat.defaultdamage = self.inst.components.combat.defaultdamage + Pigpet.pick_prefeb.attack
     --增加10点 最大生命值
-    self.maxhealth = self.maxhealth + Pigpet.pick_prefeb.health
-    self.inst.components.health.maxhealth = self.maxhealth
+    self.inst.components.health.maxhealth = self.inst.components.health.maxhealth + Pigpet.pick_prefeb.health
     --增加10点当前生命值
-    self.currenthealth = self.currenthealth + Pigpet.pick_prefeb.health
-    self.inst.components.health.currenthealth = self.currenthealth
+    self.inst.components.health.currenthealth = self.inst.components.health.currenthealth + Pigpet.pick_prefeb.health
 end
 
 function Growth:AddExp(exp)
@@ -79,9 +71,6 @@ function Growth:OnSave()
     data.currentexp = self.currentexp
     data.currentmaxexp = self.currentmaxexp
     data.maxlevel = self.maxlevel
-    data.attack = self.attack
-    data.maxhealth = self.maxhealth
-    data.currenthealth = self.currenthealth
     return data
 end   
 
@@ -91,14 +80,6 @@ function Growth:OnLoad(data)
         self.currentexp = data.currentexp
         self.currentmaxexp = data.currentmaxexp
         self.maxlevel = data.maxlevel
-        self.attack = data.attack
-        self.maxhealth = data.maxhealth
-        self.currenthealth = data.currenthealth
-        
-        self.inst.components.combat.defaultdamage = data.attack
-        self.inst.components.health.maxhealth = data.maxhealth
-        self.inst.components.health.currenthealth = data.currenthealth
-
     end
 end
 

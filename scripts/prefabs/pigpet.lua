@@ -27,6 +27,14 @@ end
 
 local function OnGetItemFromPlayer(inst, giver, item)
     if inst.components.eater:CanEat(item) then
+        --增加健康值
+        inst.components.health.currenthealth = inst.components.health.currenthealth + item.components.edible.healthvalue
+        --如果超过了最大生命值，则修改成最大生命值
+        if inst.components.health.currenthealth > inst.components.health.maxhealth then
+            inst.components.health.currenthealth = inst.components.health.maxhealth
+        end
+
+        inst.components.talker:Say("谢谢你，我现在感觉好多了")
         return
     end
 
@@ -37,6 +45,21 @@ local function OnGetItemFromPlayer(inst, giver, item)
         end
         
         inst.components.inventory:Equip(item)
+    end
+end
+
+
+local function onsave(inst, data)
+    data.attack = inst.components.combat.defaultdamage
+    data.maxhealth = inst.components.health.maxhealth
+    data.currenthealth = inst.components.health.currenthealth
+end
+
+local function onload(inst, data)
+    if data then
+        inst.components.combat.defaultdamage = data.attack
+        inst.components.health.maxhealth = data.maxhealth
+        inst.components.health.currenthealth = data.currenthealth
     end
 end
 
@@ -106,6 +129,11 @@ local function fn()
      --设置brain
      inst:SetBrain(require "brains/pigpetbrain")
      inst:ListenForEvent("attacked", OnAttacked)         
+     --监听onload 和 onsave
+
+     inst.OnSave = onsave
+     inst.OnLoad = onload
+
     return inst
 end
 
