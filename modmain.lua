@@ -68,6 +68,16 @@ local function CreatePigpetIfnot()
         pigpet.Transform:SetPosition(player.Transform:GetWorldPosition())
         pigpet.components.follower:SetLeader(player)
     end
+
+     --监听pigpet 死亡事件
+     pigpet:ListenForEvent("death", function(inst)
+        --player 说一句话
+        player.components.talker:Say("皮皮熊死了，1分钟后自动复活")
+       --启动一个5秒钟的一次性定时器
+        player:DoTaskInTime(60, function() 
+            CreatePigpetIfnot()
+        end)
+    end)
 end
 
 local function CreateMyBackpack()
