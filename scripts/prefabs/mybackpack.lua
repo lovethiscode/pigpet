@@ -45,7 +45,7 @@ local function fn(Sim)
     inst.AnimState:SetBank("backpack1")
     inst.AnimState:SetBuild("backpack")
     inst.AnimState:PlayAnimation("anim")
-
+    inst:AddTag("fridge")
 	local minimap = inst.entity:AddMiniMapEntity()
 	minimap:SetIcon("backpack.png")
     

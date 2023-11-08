@@ -71,7 +71,6 @@ local function fn()
 
     MakeCharacterPhysics(inst, 50, .5)
 
-    inst:AddTag("fridge")
     inst:AddTag("character")
 
     inst.AnimState:SetBank("pigman")

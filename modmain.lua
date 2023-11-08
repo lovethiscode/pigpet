@@ -125,3 +125,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         end
     end
 end)    
+
+AddPlayerPostInit(function(inst)
+    inst:AddTag("fridge")
+end)
