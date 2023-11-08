@@ -94,6 +94,7 @@ local function fn()
     inst:AddComponent("follower")
     --物品栏，可以装备武器，防具，背包等
     inst:AddComponent("inventory")
+    inst.components.inventory.dropondeath = false
 
     inst:AddComponent("inspectable")
     
