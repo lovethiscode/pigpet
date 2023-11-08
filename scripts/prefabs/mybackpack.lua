@@ -1,5 +1,6 @@
 local assets=
 {
+    Asset("ATLAS", "images/inventoryimages/mybackpack.xml")
 }
 
 local function onequip(inst, owner) 
@@ -52,8 +53,8 @@ local function fn(Sim)
     inst:AddComponent("inspectable")
     
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.cangoincontainer = false
     inst.components.inventoryitem.foleysound = "dontstarve/movement/foley/backpack"
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/mybackpack.xml" -- 设置物品栏图片文档。官方内置的物体有默认的图片文档，所以不需要设置这一项，但自己额外添加的物体使用自己的图片文档，就应该设置这一项
 
     MakeInventoryFloatable(inst, "idle_water", "anim")
 
