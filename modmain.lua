@@ -46,16 +46,6 @@ AddPrefabPostInitAny(function(inst)
     end
 end)
 
---重写containerwidget OnUpdate 函数
-local container_widget = GLOBAL.require "widgets/containerwidget"
-local old_OnUpdate = container_widget.OnUpdate
-function container_widget:OnUpdate(dt)
-    if self.container and self.container.prefab == "pigpet" then
-        return
-    end
-    --调用原来的函数
-    old_OnUpdate(self, dt)
-end
 --冰箱不会腐烂
 TUNING.PERISH_FRIDGE_MULT = 0
 
@@ -78,7 +68,6 @@ local function CreatePigpetIfnot()
         pigpet.Transform:SetPosition(player.Transform:GetWorldPosition())
         pigpet.components.follower:SetLeader(player)
     end
-    player.components.inventory:SetOverflow(pigpet)
 end
 
 local function ShowFullMap(inst)
@@ -112,21 +101,6 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         pig:SetStateGraph("SGpigpet")
         --设置brain
         pig:SetBrain(GLOBAL.require "brains/pigpetbrain")
-    elseif key == GLOBAL.KEY_F1 and not down then
-        --获取玩家的跟随者
-        local player = GLOBAL.GetPlayer()
-        local followers = player.components.leader.followers;
-        for k,v in pairs(followers) do
-            if k.prefab == "pigpet" then
-                --如果没有打开背包就打开背包
-                if k.components.container:IsOpen() then                   
-                    k.components.container:Close()
-                else                    
-                    k.components.container:Open(player)
-                end
-                return true
-            end
-        end
     elseif key == GLOBAL.KEY_F2 and not down then       
         local screen = TheFrontEnd:GetActiveScreen()
         -- End if we can't find the screen name (e.g. asleep)

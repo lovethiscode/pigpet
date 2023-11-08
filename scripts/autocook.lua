@@ -79,14 +79,11 @@ local function GetCookFood()
     local Ingredients = {}
     --收集角色的食材
     CollectIngredient(player.components.inventory, Ingredients)
-    --收集猪猪宠物的背包的食材
-    local followers = player.components.leader.followers;
-    for k,v in pairs(followers) do
-        if k.prefab == "pigpet" then
-          CollectIngredient(k.components.container, Ingredients)
-          break
-        end
+    --获取装备栏的背包
+    if player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK) then
+      CollectIngredient(player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK).components.container, Ingredients)
     end
+    
 
     local productResult = {}
     FindCookIngredient({}, 1, SELECTED_COUNT, Ingredients, productResult)

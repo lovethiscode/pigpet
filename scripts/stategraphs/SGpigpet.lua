@@ -70,7 +70,7 @@ local states=
                 local ba = inst:GetBufferedAction()
                 if ba and ba.target then
                     inst.components.growth:AddExp(Pigpet.pick_prefeb.collect_exp)
-                    inst.components.container:GiveItem(ba.target)
+                    GetPlayer().components.inventory:GiveItem(ba.target)
                 end
                 inst:PerformBufferedAction() 
             end ),
@@ -101,7 +101,7 @@ local states=
                     local prefb_name = Pigpet.pick_prefeb[ba.target.prefab]
                     if prefb_name then
                         local item = SpawnPrefab(prefb_name)
-                        inst.components.container:GiveItem(item)
+                        GetPlayer().components.inventory:GiveItem(item)
                         inst.components.growth:AddExp(Pigpet.pick_prefeb.collect_exp)
                       end
                 end
