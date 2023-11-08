@@ -163,4 +163,5 @@ CommonStates.AddRunStates(states,
 {
 })
 
+CommonStates.AddSimpleState(states,"refuse", "pig_reject", {"busy"})
 return StateGraph("pigpet", states, events, "idle", actionhandlers)

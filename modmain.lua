@@ -70,6 +70,16 @@ local function CreatePigpetIfnot()
     end
 end
 
+local function CreateMyBackpack()
+    --判断玩家是否已经装备了mybackpack
+    local player = GLOBAL.GetPlayer()
+    local backpack = player.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BACK)
+    if not backpack or backpack.prefab ~= "mybackpack" then
+        backpack = GLOBAL.SpawnPrefab("mybackpack")
+        player.components.inventory:Equip(backpack)
+    end
+end
+
 local function ShowFullMap(inst)
     --读取 show_global_map 配置，判断是否开启地图
     local show_global_map = GetModConfigData("show_global_map")
@@ -86,6 +96,7 @@ end
 AddSimPostInit(function(inst)
    CreatePigpetIfnot()
    ShowFullMap(inst)
+   CreateMyBackpack()
 end)
 
 

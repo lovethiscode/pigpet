@@ -10,54 +10,34 @@ local function OnAttacked(inst, data)
     inst.components.combat:SetTarget(attacker)
 end
 
+local function ShouldAcceptItem(inst, item)
+    if item.components.equippable and item.components.equippable.equipslot == EQUIPSLOTS.HEAD then
+      return true
+    end
 
-local function OnItemGet(inst, data)
-    --没有leader 就返回
-    if not inst.components.follower.leader then
-        return
-    end
-    if data.slot == 116 or data.slot == 117 or data.slot == 118 then
-        print("装备物品")
-        inst.components.inventory:Equip(data.item)
-        return
-    end
+    return inst.components.eater:CanEat(item)
 end
 
-local function OnItemLose(inst, data) 
-    if data.slot == 116 then       
-        inst.components.inventory:Unequip(EQUIPSLOTS.HANDS)
-    elseif data.slot == 117 then
-        inst.components.inventory:Unequip(EQUIPSLOTS.BODY)
-    elseif data.slot == 118 then
-        inst.components.inventory:Unequip(EQUIPSLOTS.HEAD)
-    end
 
+local function OnRefuseItem(inst, item)
+    inst.sg:GoToState("refuse")
+    inst.components.talker:Say("我不需要这个东西")
 end
 
-local function itemtest(inst, item, slot)
-    if slot == 116 then
-        --判断是不是武器
-        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.HANDS then
-            --leader 说一句话
-            inst.components.talker:Say("这里只能放手持物品")
-            return false
-        end
-    elseif slot == 117 then
-        --判断是不是防具
-        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.BODY then
-            --leader 说一句话
-            inst.components.talker:Say("这里只能放防具")
-            return false
-        end
-    elseif slot == 118 then
-        --判断是不是帽子
-        if not item.components.equippable or item.components.equippable.equipslot ~= EQUIPSLOTS.HEAD then
-            --leader 说一句话
-            inst.components.talker:Say("这里只能放帽子")
-            return false
-        end
+
+local function OnGetItemFromPlayer(inst, giver, item)
+    if inst.components.eater:CanEat(item) then
+        return
     end
-    return true
+
+    if item.components.equippable then
+        local current = inst.components.inventory:GetEquippedItem(item.components.equippable.equipslot)
+        if current then
+            inst.components.inventory:DropItem(current)
+        end
+        
+        inst.components.inventory:Equip(item)
+    end
 end
 
 local function fn()
@@ -81,7 +61,18 @@ local function fn()
     inst:AddComponent("locomotor")
     inst.components.locomotor.walkspeed = 3
 
-   
+    
+    --可以交易
+    inst:AddComponent("trader")
+    inst.components.trader:SetAcceptTest(ShouldAcceptItem)
+    inst.components.trader.onaccept = OnGetItemFromPlayer 
+    inst.components.trader.onrefuse = OnRefuseItem
+    
+    --添加可吃东西组件
+    inst:AddComponent("eater")
+    inst.components.eater.foodprefs = { "PigPet" }
+
+
     inst:AddComponent("health")
     inst.components.health:SetMaxHealth(20)
 

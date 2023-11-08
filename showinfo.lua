@@ -19,6 +19,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 				if target.components.combat and target.components.combat.defaultdamage > 0 then
 					str = str.."\n攻击力: "..target.components.combat.defaultdamage
 				end
+			
 				--驯养皮弗娄牛
 				if target.components.domesticatable ~= nil then
 					if target.components.domesticatable.GetDomestication and target.components.domesticatable.GetObedience ~= nil then
@@ -216,13 +217,13 @@ local function GetDesc(item)
 	end
 	--穿戴物的防御、耐久度
     if ic.armor then
-		str = str..ABSOBR..ic.armor.absorb_percent*100 .."%("
+		str = str.."\n防御: "..ic.armor.absorb_percent*100 .."%("
 	    if ic.armor.tags then	
 			for _, v in ipairs(ic.armor.tags) do
 				str = str .. v .. ";"
 			end
-	    str = str .. ")"
-		end
+		end		
+		str = str .. ")"
 	end
 	--暖石温度
 	if ic.temperature then
