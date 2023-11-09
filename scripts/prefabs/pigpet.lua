@@ -11,8 +11,13 @@ local function OnAttacked(inst, data)
 end
 
 local function ShouldAcceptItem(inst, item)
-    if item.components.equippable and item.components.equippable.equipslot == EQUIPSLOTS.HEAD then
-      return true
+    if item.components.equippable then
+        --如果是头部， 身体 和手 则可以装备
+        if item.components.equippable.equipslot == EQUIPSLOTS.HEAD or
+            item.components.equippable.equipslot == EQUIPSLOTS.BODY or
+            item.components.equippable.equipslot == EQUIPSLOTS.HANDS then
+            return true
+        end
     end
 
     return inst.components.eater:CanEat(item)
@@ -43,7 +48,7 @@ local function OnGetItemFromPlayer(inst, giver, item)
         if current then
             inst.components.inventory:DropItem(current)
         end
-        
+        inst.components.talker:Say("谢谢你，我变强大了")
         inst.components.inventory:Equip(item)
     end
 end

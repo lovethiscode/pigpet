@@ -45,7 +45,6 @@ GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPETFOOD = "这是给宠物吃的�
 GLOBAL.STRINGS.RECIPE_DESC.PIGPETFOOD = "可以恢复宠物生命值20点"
 
 
-
 modimport("showinfo.lua")
 modimport("extraequipment.lua")
 
@@ -55,6 +54,10 @@ AddPrefabPostInitAny(function(inst)
     if inst.components.stackable then
         --设置最大堆叠999
         inst.components.stackable.maxsize = 999
+    end
+    --如果是装备，则增加 tradable 组件
+    if inst.components.equippable then
+        inst:AddComponent("tradable") 
     end
 end)
 
