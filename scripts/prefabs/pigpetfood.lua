@@ -1,6 +1,7 @@
 local assets=
 {
-    Asset("ATLAS", "images/inventoryimages/mybackpack.xml")
+    Asset("ATLAS", "images/inventoryimages/pigpetfood.xml"),
+    Asset("ANIM", "anim/pigpetfood.zip"),
 }
 
 local function common(inst)
@@ -23,12 +24,12 @@ end
 
 local function fn(Sim)
 	local inst = common()
-    inst.AnimState:SetBank("meat")
-    inst.AnimState:SetBuild("meat")
-    inst.AnimState:PlayAnimation("raw")
+    inst.AnimState:SetBank("pigpetfood")
+    inst.AnimState:SetBuild("pigpetfood")
+    inst.AnimState:PlayAnimation("idle")
     inst.components.edible.healthvalue = 10
     
-    inst.components.inventoryitem.atlasname = "images/inventoryimages/mybackpack.xml" 
+    inst.components.inventoryitem.atlasname = "images/inventoryimages/pigpetfood.xml" 
 
     inst:AddComponent("tradable") 
     
