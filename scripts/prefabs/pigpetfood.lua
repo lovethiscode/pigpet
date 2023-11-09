@@ -1,6 +1,5 @@
 local assets=
 {
-    Asset("ATLAS", "images/inventoryimages/pigpetfood.xml"),
     Asset("ANIM", "anim/pigpetfood.zip"),
 }
 

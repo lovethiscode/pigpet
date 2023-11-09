@@ -10,6 +10,7 @@ Assets =
 	Asset("ATLAS", "images/slots5.xml"),
     Asset("IMAGE", "images/status_bgs.tex"),
 	Asset("ATLAS", "images/status_bgs.xml"),
+    Asset("ATLAS", "images/inventoryimages/pigpetfood.xml"),
 }
 
 GLOBAL.Pigpet.pick_prefeb = {
@@ -31,12 +32,17 @@ PrefabFiles = {
     "mybackpack",
     "pigpetfood"
 }
+
+local pigpetfood = GLOBAL.Recipe("pigpetfood",  {GLOBAL.Ingredient("cutgrass", 1), GLOBAL.Ingredient("twigs", 1)}, GLOBAL.RECIPETABS.SURVIVAL, GLOBAL.TECH.NONE)
+pigpetfood.atlas = "images/inventoryimages/pigpetfood.xml"
+
 GLOBAL.Pigpet.Enable = true
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
 GLOBAL.STRINGS.NAMES.PIGPETFOOD = "宠物饲料"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPETFOOD = "这是给宠物吃的，可以恢复生命值"
+GLOBAL.STRINGS.RECIPE_DESC.PIGPETFOOD = "可以恢复宠物生命值20点"
 
 
 
