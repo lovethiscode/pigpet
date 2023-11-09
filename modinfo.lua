@@ -1,5 +1,5 @@
 name = "宠物" -- mod的名称
-description = "自动砍树，战斗，采集...\n五格装备栏  物品信息  伤害数值 简易血条 永久保鲜 全图 显示状态\nF1: 打开背包 F2: 一键烹饪 F3: 禁用宠物" -- mod的描述
+description = "自动砍树，战斗，采集...\n五格装备栏  物品信息  伤害数值 简易血条 永久保鲜 全图 显示状态\nF1: 一键烹饪 F2: 禁用宠物 F5:保存 F6:加载" -- mod的描述
 author = "Your Name" -- 作者名字
 version = "1.0.0" -- mod的版本号
 
@@ -31,6 +31,25 @@ configuration_options = {
         },
         default = true,
     },
-
+    --添加一个配置，是否关闭自动保存
+    {
+        name = "disableautosave",
+        label = "关闭自动保存",
+        options = {
+            {description = "是", data = true},
+            {description = "否", data = false},
+        },
+        default = false,
+    },
+    --添加一个配置，当角色死亡的时候不删除档案
+    {
+        name = "disabledeleteondeath",
+        label = "死亡不删除档案",
+        options = {
+            {description = "是", data = true},
+            {description = "否", data = false},
+        },
+        default = true,
+    },
 }
 

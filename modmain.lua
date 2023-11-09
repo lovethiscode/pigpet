@@ -11,6 +11,13 @@ Assets =
     Asset("IMAGE", "images/status_bgs.tex"),
 	Asset("ATLAS", "images/status_bgs.xml"),
     Asset("ATLAS", "images/inventoryimages/pigpetfood.xml"),
+    Asset( "IMAGE", "images/carrot_planted.tex" ),
+    Asset( "ATLAS", "images/carrot_planted.xml" ),
+    Asset( "IMAGE", "images/flint.tex" ),
+    Asset( "ATLAS", "images/flint.xml" ),
+    Asset( "IMAGE", "images/rabbithole.tex" ),
+    Asset( "ATLAS", "images/rabbithole.xml" ),
+    
 }
 
 GLOBAL.Pigpet.pick_prefeb = {
@@ -129,15 +136,7 @@ local cooking = GLOBAL.require("cooking")
 local cookbook = GLOBAL.require("widgets/cookbook")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
-    if key == GLOBAL.KEY_F4 and not down then
-        local pig = GLOBAL.SpawnPrefab("pigman")
-        pig.Transform:SetPosition(GLOBAL.GetPlayer().Transform:GetWorldPosition())
-        pig.components.follower:SetLeader(GLOBAL.GetPlayer())
-        --设置状态图
-        pig:SetStateGraph("SGpigpet")
-        --设置brain
-        pig:SetBrain(GLOBAL.require "brains/pigpetbrain")
-    elseif key == GLOBAL.KEY_F2 and not down then       
+   if key == GLOBAL.KEY_F1 and not down then       
         local screen = TheFrontEnd:GetActiveScreen()
         -- End if we can't find the screen name (e.g. asleep)
         if not screen or not screen.name then return true end
@@ -153,15 +152,41 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
                 screen:Close()
             end
         end
-    elseif key == GLOBAL.KEY_F3 and not down then     
+    elseif key == GLOBAL.KEY_F2 and not down then     
         if GLOBAL.Pigpet.Enable then
             GLOBAL.Pigpet.Enable = false
         else
             GLOBAL.Pigpet.Enable = true
         end
+    elseif key == GLOBAL.KEY_F5 and not down then
+        GLOBAL.GetPlayer().components.autosaver:DoSave()
+    elseif key == GLOBAL.KEY_F6 and not down then
+        GLOBAL.Settings.save_slot = GLOBAL.SaveGameIndex.saveslot
+		GLOBAL.SetPause(true)
+		GLOBAL.StartNextInstance({reset_action=GLOBAL.RESET_ACTION.LOAD_SLOT, save_slot = GLOBAL.SaveGameIndex:GetCurrentSaveSlot()}, true)
+		GLOBAL.SetPause(false)
     end
 end)    
 
 AddPlayerPostInit(function(inst)
     inst:AddTag("fridge")
 end)
+
+--获取关闭自动保存配置，如果关闭了，将 AUTOSAVE_INTERVAL 设置无限大
+local disableautosave = GetModConfigData("disableautosave")
+if disableautosave then
+    GLOBAL.TUNING.AUTOSAVE_INTERVAL = 99999999999
+end
+
+--读取配置，如果死亡不删除档案，将删除档案的方法替换为一个空方法
+local disabledeleteondeath = GetModConfigData("disabledeleteondeath")
+if disabledeleteondeath then
+    function GLOBAL.SaveIndex:EraseCurrent(cb)
+        GLOBAL.GetPlayer():DoTaskInTime(2, function()
+            GLOBAL.TheFrontEnd:Fade(false,1)
+        end )
+        GLOBAL.GetPlayer():DoTaskInTime(5, function()
+            GLOBAL.StartNextInstance({reset_action=GLOBAL.RESET_ACTION.LOAD_SLOT, save_slot = GLOBAL.SaveGameIndex:GetCurrentSaveSlot()}, true)
+        end )
+    end
+end

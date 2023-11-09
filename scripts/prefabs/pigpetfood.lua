@@ -26,7 +26,7 @@ local function fn(Sim)
     inst.AnimState:SetBank("pigpetfood")
     inst.AnimState:SetBuild("pigpetfood")
     inst.AnimState:PlayAnimation("idle")
-    inst.components.edible.healthvalue = 10
+    inst.components.edible.healthvalue = 20
     
     inst.components.inventoryitem.atlasname = "images/inventoryimages/pigpetfood.xml" 
 

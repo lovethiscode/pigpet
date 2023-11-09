@@ -478,13 +478,25 @@ AddComponentPostInit("health", function(Health, inst)
   end)
   
 
-  AddMinimapAtlas("images/beefalo.xml")
-  
-  AddPrefabPostInit("beefalo", function(inst)
+  --定一个表用来存储需要加入的图片文档
+  local minimapAtlas = {
+	"beefalo",
+	"carrot_planted",
+	"flint",
+	"rabbithole"
+  }
+  --遍历表，将图片文档加入到游戏中
+  for i, v in ipairs(minimapAtlas) do
+	AddMinimapAtlas("images/"..v..".xml")
+  end
+  --遍历表，设置小地图图标
+  for i, v in ipairs(minimapAtlas) do
+	AddPrefabPostInit(v, function(inst)
 	  local minimap = inst.entity:AddMiniMapEntity()
 	  minimap:SetIcon( inst.prefab .. ".tex" )
-  end)
-
+	end)
+  end
+  
 local Widget = GLOBAL.require('widgets/widget')
 local Image = GLOBAL.require('widgets/image')
 local Text = GLOBAL.require('widgets/text')
