@@ -1,9 +1,9 @@
 require "behaviours/wander"
 
 local MIN_FOLLOW_DIST = 1
-local TARGET_FOLLOW_DIST = 5
-local MAX_FOLLOW_DIST = 11
-local MAX_WANDER_DIST = 3
+local TARGET_FOLLOW_DIST = 2
+local MAX_FOLLOW_DIST = 12
+local MAX_WANDER_DIST = 2
 
 
 --搜索附近可采集物品的距离
@@ -97,6 +97,17 @@ end
 
 local MAX_CHASE_TIME = 10
 local MAX_CHASE_DIST = 30
+
+
+
+local function GetWanderDistFn(inst)
+    if Pigpet.Enable then
+        return WANDER_DIST
+    else
+        return 0.5
+    end
+end
+
 function PigpetBrain:OnStart()
     local work = WhileNode(function() return Pigpet.Enable end, "Enable",  
             PriorityNode {
@@ -118,7 +129,7 @@ function PigpetBrain:OnStart()
     local root = PriorityNode ({
         work,
         Follow(self.inst, GetLeader, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
-        Wander(self.inst, GetPlayerPosition, MAX_WANDER_DIST)
+        Wander(self.inst, GetPlayerPosition, GetWanderDistFn)
     }, 0.25)
 
     self.bt = BT(self.inst, root)

@@ -33,6 +33,10 @@ GLOBAL.Pigpet.pick_prefeb = {
     dungpile = "poop",
     aloe_planted = "aloe",
 }
+
+
+GLOBAL.Pigpet.homesigns = {}
+
 --声明预制物
 PrefabFiles = {
     "pigpet",
@@ -54,6 +58,7 @@ GLOBAL.STRINGS.RECIPE_DESC.PIGPETFOOD = "可以恢复宠物生命值20点"
 
 modimport("showinfo.lua")
 modimport("extraequipment.lua")
+modimport("travel.lua")
 
 --监听所有预制物的构造
 AddPrefabPostInitAny(function(inst)

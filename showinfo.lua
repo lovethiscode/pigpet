@@ -10,6 +10,9 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 			if target.prefab then
 			    str = str .. "\n代码: " .. target.prefab
 			end
+			if target.components.travelable then
+				str = str .."\n".. tostring(target.components.travelable.name)
+			end
 			if target.components then
 				--生物血量
 				if target.components.health then
