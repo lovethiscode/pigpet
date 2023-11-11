@@ -232,13 +232,15 @@ AddClassPostConstruct("widgets/recipepopup", function(self)
                     self.doAction:SetOnClick(function()
                         GLOBAL.DoRecipeClick(self.owner, slotrecipe)
                     end)
-                    print("可以制作完成")
                 end
 
                 if knows and can_build and not has then
                     self.doAction:Show()
                 end
-
+                if not knows or not can_build then
+                    --说话
+                    owner.components.talker:Say(GLOBAL.STRINGS.NAMES[string.upper(slotrecipe.name)] .. "(需要制作一个原型)")
+                end
             end
         end
     end
