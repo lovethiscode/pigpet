@@ -1,7 +1,7 @@
 require "behaviours/wander"
 
 local MIN_FOLLOW_DIST = 1
-local TARGET_FOLLOW_DIST = 2
+local TARGET_FOLLOW_DIST = 5
 local MAX_FOLLOW_DIST = 12
 local MAX_WANDER_DIST = 2
 
@@ -101,11 +101,7 @@ local MAX_CHASE_DIST = 30
 
 
 local function GetWanderDistFn(inst)
-    if Pigpet.Enable then
-        return WANDER_DIST
-    else
-        return 0.5
-    end
+    return MAX_WANDER_DIST
 end
 
 function PigpetBrain:OnStart()

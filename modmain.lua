@@ -195,3 +195,51 @@ if disabledeleteondeath then
         end )
     end
 end
+
+
+--一键制作
+local ImageButton = GLOBAL.require "widgets/imagebutton"
+AddClassPostConstruct("widgets/recipepopup", function(self)
+    local old = self.Refresh
+	self.Refresh = function(...)
+		old(...)
+        if not self.shown then
+            return
+        end
+        local recipe = self.recipe
+        local owner = self.owner
+        if self.doAction then
+            --先隐藏
+            self.doAction:Hide()
+        end
+
+        for k,v in pairs(recipe.ingredients) do
+            --判断是否是需要合成的物品
+            local slotrecipe = GLOBAL.Recipes[v.type]
+            if slotrecipe then
+                local knows = owner.components.builder:KnowsRecipe(v.type)
+                local can_build = owner.components.builder:CanBuild(v.type)
+                local has, num_found = owner.components.inventory:Has(v.type, GLOBAL.RoundUp(v.amount * owner.components.builder.ingredientmod), true)
+                print("需要：" .. tostring(k) .. " :" .. v.type .. " " .. v.amount .. " knows:" .. tostring(knows) .. " can_build:" .. tostring(can_build) .. " has:" .. tostring(has).. " num_found:" .. tostring(num_found))
+                --如果知道配方，材料充足，并且不够
+
+
+                if knows and can_build and not has and not self.doAction then                
+                    self.doAction = self.contents:AddChild(ImageButton("images/ui.xml", "button_small.tex", "button_small_over.tex", "button_small_disabled.tex"))
+                    self.doAction:SetPosition(220, 140)
+                    self.doAction:SetText("材料")
+                    self.doAction:MoveToFront()
+                    self.doAction:SetOnClick(function()
+                        GLOBAL.DoRecipeClick(self.owner, slotrecipe)
+                    end)
+                    print("可以制作完成")
+                end
+
+                if knows and can_build and not has then
+                    self.doAction:Show()
+                end
+
+            end
+        end
+    end
+end)
