@@ -1,8 +1,8 @@
 require "behaviours/wander"
 
 local MIN_FOLLOW_DIST = 1
-local TARGET_FOLLOW_DIST = 5
-local MAX_FOLLOW_DIST = 12
+local TARGET_FOLLOW_DIST = 3
+local MAX_FOLLOW_DIST = 4
 local MAX_WANDER_DIST = 2
 
 
@@ -105,7 +105,7 @@ local function GetWanderDistFn(inst)
 end
 
 function PigpetBrain:OnStart()
-    local work = WhileNode(function() return Pigpet.Enable end, "Enable",  
+    local work = WhileNode(function() return Pigpet.Status == 0 end, "Enable",  
             PriorityNode {
                 WhileNode( function() return self.inst.components.combat.target ~= nil and KeepChoppingAction(self.inst) end, "AttackMomentarily",
                         ChaseAndAttack(self.inst, MAX_CHASE_TIME, MAX_CHASE_DIST) ),
@@ -125,7 +125,7 @@ function PigpetBrain:OnStart()
     local root = PriorityNode ({
         work,
         Follow(self.inst, GetLeader, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
-        Wander(self.inst, GetPlayerPosition, GetWanderDistFn)
+        --Wander(self.inst, GetPlayerPosition, GetWanderDistFn)
     }, 0.25)
 
     self.bt = BT(self.inst, root)

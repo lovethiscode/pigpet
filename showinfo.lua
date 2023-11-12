@@ -23,6 +23,61 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 					str = str.."\n攻击力: "..target.components.combat.defaultdamage
 				end
 			
+				if target.prefab == "winterometer" then
+					--温度计
+					local temp = GLOBAL.GetSeasonManager() and GLOBAL.GetSeasonManager():GetCurrentTemperature() or 30
+					local high_temp = TUNING.OVERHEAT_TEMP
+					local low_temp = 0
+					
+					temp = math.min( math.max(low_temp, temp), high_temp)
+					
+					str = str.."\n温度: ".. tostring(math.floor(temp)) .. "\176C"
+				end
+				if target.prefab == "pigpet" then
+					--判断当前pigpet状态
+					if GLOBAL.Pigpet.Status == 0 then
+						str = str.."\n状态: 攻击"
+					elseif GLOBAL.Pigpet.Status == 1 then
+						str = str.."\n状态: 跟随"
+					end
+				end
+
+				--是否有物品槽
+				if target.components.inventory then
+					--获取手部物品
+					local handitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HANDS)
+					if handitem then
+						--获取手部物品的耐久
+						if handitem.components.finiteuses then
+							str = str.."\n武器耐久: "..math.floor(handitem.components.finiteuses:GetPercent() *100).."%"
+						end
+					end
+					--获取头部物品
+					local headitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HEAD)
+					if headitem then
+						--获取头部物品的防御
+						if headitem.components.armor then
+							str = str.."\n头部防御: "..headitem.components.armor.absorb_percent*100 .."%"
+							--获取头部物品的耐久
+							if headitem.components.finiteuses then
+								str = str.." 头部耐久: "..math.floor(headitem.components.finiteuses:GetPercent() *100).."%"
+							end
+						end
+					end
+					--获取身体部位
+					local bodyitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BODY)
+					if bodyitem then
+						--获取身体部位的防御
+						if bodyitem.components.armor then
+							str = str.."\n身体防御: "..bodyitem.components.armor.absorb_percent*100 .."%"
+							--身体耐久
+							if bodyitem.components.finiteuses then
+								str = str.." 身体耐久: "..math.floor(bodyitem.components.finiteuses:GetPercent() *100).."%"
+							end
+						end
+					end
+				end
+
 				--驯养皮弗娄牛
 				if target.components.domesticatable ~= nil then
 					if target.components.domesticatable.GetDomestication and target.components.domesticatable.GetObedience ~= nil then
@@ -35,11 +90,11 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 						for k,v in pairs(target.components.domesticatable.tendencies) do
 							local ten = "默认"
 							if k == GLOBAL.TENDENCY.ORNERY then
-								ten = "攻击牛"
+								ten = "战牛"
 							elseif k == GLOBAL.TENDENCY.RIDER then
-								ten = "骑牛"
+								ten = "行牛"
 							elseif k == GLOBAL.TENDENCY.PUDGY then
-								ten = "宠物牛"
+								ten = "肥牛"
 							end
 							str = str .. string.format("\n %s:%.2f", ten, v)
 						end
@@ -463,7 +518,7 @@ local function ShowHealthBar(inst)
 	--将label 的位置设置在inst 的上方
 	label:SetPos(0, 0, 0)
 	--启动0.5秒的定时器更新生命值
-	inst:DoPeriodicTask(0.5, function()
+	inst:DoPeriodicTask(1, function()
 		label:SetText(string.format("%d/%d", inst.components.health.currenthealth, inst.components.health:GetMaxHealth()))
 	end)
 end

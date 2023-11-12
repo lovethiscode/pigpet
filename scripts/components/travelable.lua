@@ -40,7 +40,7 @@ end
 
 function Travelable:OnRemoveEntity()
     --从 homesigns 表中移除
-    for k, v in pairs(GLOBAL.Pigpet.homesigns) do
+    for k, v in pairs(Pigpet.homesigns) do
         if v == self.inst then
             table.remove(Pigpet.homesigns, k)
             break

@@ -47,7 +47,8 @@ PrefabFiles = {
 local pigpetfood = GLOBAL.Recipe("pigpetfood",  {GLOBAL.Ingredient("cutgrass", 1), GLOBAL.Ingredient("twigs", 1)}, GLOBAL.RECIPETABS.SURVIVAL, GLOBAL.TECH.NONE)
 pigpetfood.atlas = "images/inventoryimages/pigpetfood.xml"
 
-GLOBAL.Pigpet.Enable = true
+--0 正常 1 禁用 2 隐藏
+GLOBAL.Pigpet.Status = 0
 GLOBAL.STRINGS.NAMES.PIGPET = "皮皮熊"
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPET = "我是一只宠物" -- 物体的检查描述
 
@@ -75,29 +76,29 @@ end)
 
 --冰箱不会腐烂
 TUNING.PERISH_FRIDGE_MULT = 0
+--
+--监听是否已经有背包了
+AddPrefabPostInit("mybackpack", function(inst)
+    GLOBAL.Pigpet.mybackpack = inst
+end)
 
+--监听pigpet构造    
+AddPrefabPostInit("pigpet", function(inst)
+    GLOBAL.Pigpet.pet = inst
+end)
 
 local function CreatePigpetIfnot()
-    local player = GLOBAL.GetPlayer()
-    --获取玩家的跟随者
-    local followers = player.components.leader.followers;
-    --判断是否有pigpet跟随者
-    local pigpet
-    for k,v in pairs(followers) do
-        --如果是pigpet
-        if k.prefab == "pigpet" then
-            pigpet = k
-            break
-        end
-    end
-    if not pigpet then
-        pigpet = GLOBAL.SpawnPrefab("pigpet")
-        pigpet.Transform:SetPosition(player.Transform:GetWorldPosition())
-        pigpet.components.follower:SetLeader(player)
+    if not GLOBAL.Pigpet.pet then
+        GLOBAL.SpawnPrefab("pigpet")
     end
 
+    local player = GLOBAL.GetPlayer()
+    GLOBAL.Pigpet.pet.Transform:SetPosition(player.Transform:GetWorldPosition())
+    GLOBAL.Pigpet.pet.components.follower:SetLeader(player)
+
+    GLOBAL.Pigpet.Status = 0
      --监听pigpet 死亡事件
-     pigpet:ListenForEvent("death", function(inst)
+    GLOBAL.Pigpet.pet:ListenForEvent("death", function(inst)
         --player 说一句话
         player.components.talker:Say("皮皮熊死了，1分钟后自动复活")
        --启动一个5秒钟的一次性定时器
@@ -108,13 +109,11 @@ local function CreatePigpetIfnot()
 end
 
 local function CreateMyBackpack()
-    --判断玩家是否已经装备了mybackpack
     local player = GLOBAL.GetPlayer()
-    local backpack = player.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BACK)
-    if not backpack or backpack.prefab ~= "mybackpack" then
-        backpack = GLOBAL.SpawnPrefab("mybackpack")
-        player.components.inventory:Equip(backpack)
+    if not GLOBAL.Pigpet.mybackpack then
+        GLOBAL.SpawnPrefab("mybackpack")
     end
+    player.components.inventory:Equip(GLOBAL.Pigpet.mybackpack)
 end
 
 local function ShowFullMap(inst)
@@ -147,8 +146,7 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         if not screen or not screen.name then return true end
         -- If the hud exists, open the UI
         if screen.name:find("HUD") then
-            -- We want to pass in the (clientside) player entity
-           
+            -- We want to pass in the (clientside) player entity         
             TheFrontEnd:PushScreen(cookbook())
             return true
         else
@@ -157,11 +155,15 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
                 screen:Close()
             end
         end
-    elseif key == GLOBAL.KEY_F2 and not down then     
-        if GLOBAL.Pigpet.Enable then
-            GLOBAL.Pigpet.Enable = false
-        else
-            GLOBAL.Pigpet.Enable = true
+    elseif key == GLOBAL.KEY_F2 and not down then   
+        GLOBAL.Pigpet.Status = GLOBAL.Pigpet.Status + 1
+        if GLOBAL.Pigpet.Status > 2 then
+            GLOBAL.Pigpet.Status = 0
+            GLOBAL.Pigpet.pet:Show()
+        end  
+        if GLOBAL.Pigpet.Status == 2 then
+            --隐藏宠物
+            GLOBAL.Pigpet.pet:Hide()
         end
     elseif key == GLOBAL.KEY_F5 and not down then
         GLOBAL.GetPlayer().components.autosaver:DoSave()
@@ -230,14 +232,15 @@ AddClassPostConstruct("widgets/recipepopup", function(self)
                     self.doAction:SetText("材料")
                     self.doAction:MoveToFront()
                     self.doAction:SetOnClick(function()
-                        GLOBAL.DoRecipeClick(self.owner, slotrecipe)
+                        GLOBAL.DoRecipeClick(self.owner, self.doAction.slotrecipe)
                     end)
                 end
 
                 if knows and can_build and not has then
+                    self.doAction.slotrecipe = slotrecipe
                     self.doAction:Show()
                 end
-                if not knows or not can_build then
+                if not knows and can_build then
                     --说话
                     owner.components.talker:Say(GLOBAL.STRINGS.NAMES[string.upper(slotrecipe.name)] .. "(需要制作一个原型)")
                 end

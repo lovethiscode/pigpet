@@ -12,7 +12,7 @@ local CookBook = Class(Screen, function(self)
     Screen._ctor(self, "CookBook")
     self.currentRow = 0
     self.totalRow = 0
-    SetPause(true, "cookbook")
+    --SetPause(true, "cookbook")
     --画一个背景
     self.background = self:AddChild(Image("images/global.xml", "square.tex"))
     self.background:SetVRegPoint(ANCHOR_MIDDLE)
@@ -77,7 +77,7 @@ function CookBook:ScrollUp()
 end
 
 function CookBook:Close()
-  SetPause(false, "cookbook")
+  --SetPause(false, "cookbook")
   local screen = TheFrontEnd:GetActiveScreen()
   -- Don't pop the HUD
   if screen and screen.name:find("HUD") == nil then
