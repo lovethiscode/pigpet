@@ -144,6 +144,7 @@ end)
 
 local cooking = GLOBAL.require("cooking")
 local cookbook = GLOBAL.require("widgets/cookbook")
+local arrange = GLOBAL.require("arrange")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
    if key == GLOBAL.KEY_F1 and not down then       
@@ -171,6 +172,8 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
             --隐藏宠物
             GLOBAL.Pigpet.pet:Hide()
         end
+    elseif key == GLOBAL.KEY_F3 and not down then
+        arrange()
     elseif key == GLOBAL.KEY_F5 and not down then
         GLOBAL.GetPlayer().components.autosaver:DoSave()
     elseif key == GLOBAL.KEY_F6 and not down then
