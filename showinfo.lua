@@ -47,10 +47,6 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 					--获取手部物品
 					local handitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HANDS)
 					if handitem then
-						--获取手部物品的耐久
-						if handitem.components.finiteuses then
-							str = str.."\n武器耐久: "..math.floor(handitem.components.finiteuses:GetPercent() *100).."%"
-						end
 					end
 					--获取头部物品
 					local headitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HEAD)
@@ -59,9 +55,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 						if headitem.components.armor then
 							str = str.."\n头部防御: "..headitem.components.armor.absorb_percent*100 .."%"
 							--获取头部物品的耐久
-							if headitem.components.finiteuses then
-								str = str.." 头部耐久: "..math.floor(headitem.components.finiteuses:GetPercent() *100).."%"
-							end
+							str = str.." 耐久: "..math.floor(headitem.components.armor:GetPercent() *100).."%"		
 						end
 					end
 					--获取身体部位
@@ -71,9 +65,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 						if bodyitem.components.armor then
 							str = str.."\n身体防御: "..bodyitem.components.armor.absorb_percent*100 .."%"
 							--身体耐久
-							if bodyitem.components.finiteuses then
-								str = str.." 身体耐久: "..math.floor(bodyitem.components.finiteuses:GetPercent() *100).."%"
-							end
+							str = str.." 耐久: "..math.floor(bodyitem.components.armor:GetPercent() *100).."%"			
 						end
 					end
 				end

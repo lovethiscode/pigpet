@@ -52,9 +52,9 @@ local function FindCookIngredient(selectedIngredient, start, n, nodes, productRe
             table.remove(selectedIngredient)
             nodes[i].count = nodes[i].count + 1
         end
-
-        FindCookIngredient(selectedIngredient, i + 1, n, nodes, productResult)
     end
+    
+    FindCookIngredient(selectedIngredient, start + 1, n, nodes, productResult)
 end
 
 local function CollectIngredient(container, result)
