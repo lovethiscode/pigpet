@@ -2,11 +2,11 @@ require "class"
 --每秒中1点经验值
 Pigpet.pick_prefeb.time_exp = 1
 --每次收集增加2点经验
-Pigpet.pick_prefeb.collect_exp = 2
+Pigpet.pick_prefeb.collect_exp = 1
 --每次攻击增加2点经验
 Pigpet.pick_prefeb.attack_exp = 2
 --砍树经验
-Pigpet.pick_prefeb.chop_exp = 2
+Pigpet.pick_prefeb.chop_exp = 1
 
 
 --每次升级增加的攻击力
@@ -17,13 +17,13 @@ Pigpet.pick_prefeb.health = 10
 local Growth = Class(function(self, inst)
     self.inst = inst
     self.level = 1
-    self.maxlevel = 99
+    self.maxlevel = 999
     --当前等级经验值
     self.currentexp = 0
     --当前升级所需经验值
     self.currentmaxexp = 100
     --启动一个循环定时任务
-    self.inst:DoPeriodicTask(1, function() self:AddExp(Pigpet.pick_prefeb.time_exp) end)
+    self.inst:DoPeriodicTask(5, function() self:AddExp(Pigpet.pick_prefeb.time_exp) end)
 end)
 
 
@@ -70,7 +70,6 @@ function Growth:OnSave()
     data.level = self.level
     data.currentexp = self.currentexp
     data.currentmaxexp = self.currentmaxexp
-    data.maxlevel = self.maxlevel
     return data
 end   
 
@@ -79,7 +78,6 @@ function Growth:OnLoad(data)
         self.level = data.level
         self.currentexp = data.currentexp
         self.currentmaxexp = data.currentmaxexp
-        self.maxlevel = data.maxlevel
     end
 end
 

@@ -28,13 +28,6 @@ local function onclose(inst)
 end
 
 
-local slotpos = {}
-
-for y = 0, 3 do
-	table.insert(slotpos, Vector3(-162, -y*75 + 114 ,0))
-	table.insert(slotpos, Vector3(-162 +75, -y*75 + 114 ,0))
-end
-
 local function fn(Sim)
 	local inst = CreateEntity()
     
@@ -68,7 +61,7 @@ local function fn(Sim)
     inst:AddComponent("container")
     local slotpos = {}
     local x_offset = (-72-72-40-2)*2
-    for z = 1,4 do
+    for z = 1,5 do
         for y = 0.5,-1.5,-1 do
             for x = -2,2 do
                 table.insert(slotpos, Vector3(72*x +x_offset, 72*y -2-40-72-36, 0))
@@ -81,7 +74,7 @@ local function fn(Sim)
     inst.components.container.widgetslotpos = slotpos
     inst.components.container.widgetanimbank = "ui_chest_3x3"
     -- inst.components.container.widgetanimbuild = "ui_portablecellar"
-    inst.components.container.widgetpos = Vector3(-100, -285, 0)
+    inst.components.container.widgetpos = Vector3(-230, -285, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
    

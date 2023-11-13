@@ -1,5 +1,6 @@
 local cooking = require("cooking")
 local SELECTED_COUNT = 4
+local canCookCache = {}
 
 local function create_node(inst, count)
     return {
@@ -17,7 +18,19 @@ local function CanCookFood(selectedIngredient)
     for _, item in ipairs(selectedIngredient) do
       table.insert(ings, item.inst.prefab)
     end
-    return cooking.CalculateRecipe("cookpot", ings)
+    local key = table.concat(ings, ",")
+    --判断是否已经计算过了
+    if canCookCache[key] then
+      local cache = canCookCache[key]
+      return cache.product, cache.cooktime
+    end
+    local product, cooktime = cooking.CalculateRecipe("cookpot", ings)
+    local cache = {}
+    cache.product = product
+    cache.cooktime = cooktime
+
+    canCookCache[key] = cache
+    return product, cooktime
 end
 
 local function SaveCookProduct(selectedIngredient, product, cooktime, productResult)

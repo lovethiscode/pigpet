@@ -44,7 +44,13 @@ PrefabFiles = {
     "pigpetfood"
 }
 
-local pigpetfood = GLOBAL.Recipe("pigpetfood",  {GLOBAL.Ingredient("cutgrass", 1), GLOBAL.Ingredient("twigs", 1)}, GLOBAL.RECIPETABS.SURVIVAL, GLOBAL.TECH.NONE)
+local pigpetfood
+if GLOBAL.IsDLCEnabled(GLOBAL.CAPY_DLC) or GLOBAL.IsDLCEnabled(GLOBAL.PORKLAND_DLC) then
+    pigpetfood = GLOBAL.Recipe("pigpetfood",  {GLOBAL.Ingredient("cutgrass", 10), GLOBAL.Ingredient("twigs", 10)}, GLOBAL.RECIPETABS.SURVIVAL, GLOBAL.TECH.NONE, nil, nil, nil, nil, 10)
+else
+    pigpetfood = GLOBAL.Recipe("pigpetfood",   {GLOBAL.Ingredient("cutgrass", 10), GLOBAL.Ingredient("twigs", 10)}, GLOBAL.RECIPETABS.SURVIVAL, GLOBAL.TECH.NONE, nil, 10) 
+end
+
 pigpetfood.atlas = "images/inventoryimages/pigpetfood.xml"
 
 --0 正常 1 禁用 2 隐藏
