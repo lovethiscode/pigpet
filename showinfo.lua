@@ -123,7 +123,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 				end
 				--预测农作物and距离成长时间
 				if target.components.crop and target.components.crop.growthpercent then
-					if target.components.crop.product_prefab and cropproduct == "yes" then
+					if target.components.crop.product_prefab then
 					str = str.."\n"..(GLOBAL.STRINGS.NAMES[string.upper(target.components.crop.product_prefab)])
 				end 
 				if target.components.crop.growthpercent < 1 then
@@ -143,7 +143,7 @@ AddClassPostConstruct("widgets/hoverer",function(self)
 					end
 				end
 				--船耐久
-				if target.components.boathealth and GetModConfigData("显示船耐久")=="yes"  then
+				if target.components.boathealth  then
 					str = str.."\n船: "..math.ceil(target.components.boathealth.currenthealth).."/"..target.components.boathealth.maxhealth
 				end
 				--耐久

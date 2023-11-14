@@ -37,11 +37,12 @@ GLOBAL.Pigpet.pickPrefeb = {
 GLOBAL.Pigpet.growth = {}
 
 GLOBAL.Pigpet.notPickPrefeb = {
-
+    "heatrock",
 }
 
 GLOBAL.Pigpet.notPickTag = {
-    "trap"
+    "trap",
+    "backpack"
 }
 
 GLOBAL.Pigpet.homesigns = {}

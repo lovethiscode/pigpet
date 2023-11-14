@@ -56,10 +56,13 @@ end
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
     return FindEntity(inst, PICK_TARGET_DIST, function(item)
-        --先判断是否在 not_pick 中
-        if Pigpet.notPickPrefeb[item.prefab] then
-            return false
+        --判断是否在 notPickPrefeb表中
+        for _, prefab in pairs(Pigpet.notPickPrefeb) do
+            if prefab == item.prefab then
+                return false
+            end
         end
+        
         --遍历 notPickTag 中的tag，判断item 是否在其中
         for _, tag in pairs(Pigpet.notPickTag) do
             if item:HasTag(tag) then
