@@ -20,7 +20,7 @@ Assets =
     
 }
 
-GLOBAL.Pigpet.pick_prefeb = {
+GLOBAL.Pigpet.pickPrefeb = {
     sapling = "twigs",
     flower = "petals",
     grass = "cutgrass",
@@ -34,6 +34,15 @@ GLOBAL.Pigpet.pick_prefeb = {
     aloe_planted = "aloe",
 }
 
+GLOBAL.Pigpet.growth = {}
+
+GLOBAL.Pigpet.notPickPrefeb = {
+
+}
+
+GLOBAL.Pigpet.notPickTag = {
+    "trap"
+}
 
 GLOBAL.Pigpet.homesigns = {}
 

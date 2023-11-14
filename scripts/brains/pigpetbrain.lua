@@ -55,7 +55,19 @@ end
 
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
-    return FindEntity(inst, PICK_TARGET_DIST, function(item) return item.components.inventoryitem and item.components.inventoryitem.canbepickedup end)
+    return FindEntity(inst, PICK_TARGET_DIST, function(item)
+        --先判断是否在 not_pick 中
+        if Pigpet.notPickPrefeb[item.prefab] then
+            return false
+        end
+        --遍历 notPickTag 中的tag，判断item 是否在其中
+        for _, tag in pairs(Pigpet.notPickTag) do
+            if item:HasTag(tag) then
+                return false
+            end
+        end
+        return item.components.inventoryitem and item.components.inventoryitem.canbepickedup 
+    end)
 end
 
 local function DoPickableTarget(inst)
@@ -71,7 +83,7 @@ end
 local function GetPickTarget(inst)
     local target = FindEntity(inst.components.follower.leader, PICK_TARGET_DIST, function(item) 
         if item.components.pickable and item.components.pickable:CanBePicked() then
-            local prefb_name = Pigpet.pick_prefeb[item.prefab]
+            local prefb_name = Pigpet.pickPrefeb[item.prefab]
             if prefb_name then
                 return true
             else 

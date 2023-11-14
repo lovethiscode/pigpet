@@ -46,7 +46,7 @@ local states=
             
             TimeEvent(13*FRAMES, function(inst) 
                 inst:PerformBufferedAction()
-                inst.components.growth:AddExp(Pigpet.pick_prefeb.chop_exp)
+                inst.components.growth:AddExp(Pigpet.growth.chop_exp)
              end ),
         },
         
@@ -69,7 +69,7 @@ local states=
             TimeEvent(10*FRAMES, function(inst) 
                 local ba = inst:GetBufferedAction()
                 if ba and ba.target then
-                    inst.components.growth:AddExp(Pigpet.pick_prefeb.collect_exp)
+                    inst.components.growth:AddExp(Pigpet.growth.collect_exp)
                     GetPlayer().components.inventory:GiveItem(ba.target)
                 end
                 inst:PerformBufferedAction() 
@@ -98,11 +98,11 @@ local states=
             TimeEvent(10*FRAMES, function(inst) 
                 local ba = inst:GetBufferedAction()
                 if ba and ba.target then
-                    local prefb_name = Pigpet.pick_prefeb[ba.target.prefab]
+                    local prefb_name = Pigpet.pickPrefeb[ba.target.prefab]
                     if prefb_name then
                         local item = SpawnPrefab(prefb_name)
                         GetPlayer().components.inventory:GiveItem(item)
-                        inst.components.growth:AddExp(Pigpet.pick_prefeb.collect_exp)
+                        inst.components.growth:AddExp(Pigpet.growth.collect_exp)
                       end
                 end
                 inst:PerformBufferedAction() 
@@ -130,7 +130,7 @@ local states=
         {
             TimeEvent(13*FRAMES, function(inst) 
                 inst.components.combat:DoAttack() 
-                inst.components.growth:AddExp(Pigpet.pick_prefeb.attack_exp)
+                inst.components.growth:AddExp(Pigpet.growth.attack_exp)
             end),
         },
         events=

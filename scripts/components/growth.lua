@@ -1,18 +1,18 @@
 require "class"
 --每秒中1点经验值
-Pigpet.pick_prefeb.time_exp = 1
+Pigpet.growth.time_exp = 1
 --每次收集增加2点经验
-Pigpet.pick_prefeb.collect_exp = 1
+Pigpet.growth.collect_exp = 1
 --每次攻击增加2点经验
-Pigpet.pick_prefeb.attack_exp = 2
+Pigpet.growth.attack_exp = 2
 --砍树经验
-Pigpet.pick_prefeb.chop_exp = 1
+Pigpet.growth.chop_exp = 1
 
 
 --每次升级增加的攻击力
-Pigpet.pick_prefeb.attack = 1
+Pigpet.growth.attack = 1
 --每次升级增加的生命值
-Pigpet.pick_prefeb.health = 10
+Pigpet.growth.health = 10
 
 local Growth = Class(function(self, inst)
     self.inst = inst
@@ -23,7 +23,7 @@ local Growth = Class(function(self, inst)
     --当前升级所需经验值
     self.currentmaxexp = 100
     --启动一个循环定时任务
-    self.inst:DoPeriodicTask(5, function() self:AddExp(Pigpet.pick_prefeb.time_exp) end)
+    self.inst:DoPeriodicTask(5, function() self:AddExp(Pigpet.growth.time_exp) end)
 end)
 
 
@@ -45,11 +45,11 @@ end
 
 function Growth:HandleUpgrade()
     --每次升级增加1点攻击力
-    self.inst.components.combat.defaultdamage = self.inst.components.combat.defaultdamage + Pigpet.pick_prefeb.attack
+    self.inst.components.combat.defaultdamage = self.inst.components.combat.defaultdamage + Pigpet.growth.attack
     --增加10点 最大生命值
-    self.inst.components.health.maxhealth = self.inst.components.health.maxhealth + Pigpet.pick_prefeb.health
+    self.inst.components.health.maxhealth = self.inst.components.health.maxhealth + Pigpet.growth.health
     --增加10点当前生命值
-    self.inst.components.health.currenthealth = self.inst.components.health.currenthealth + Pigpet.pick_prefeb.health
+    self.inst.components.health.currenthealth = self.inst.components.health.currenthealth + Pigpet.growth.health
 end
 
 function Growth:AddExp(exp)
