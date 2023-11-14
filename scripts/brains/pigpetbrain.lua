@@ -55,7 +55,7 @@ end
 
 --直接拾取， 燧石
 local function GetPickableTarget(inst)
-    return FindEntity(inst, PICK_TARGET_DIST, function(item)
+    return FindEntity(inst.components.follower.leader, PICK_TARGET_DIST, function(item)
         --判断是否在 notPickPrefeb表中
         for _, prefab in pairs(Pigpet.notPickPrefeb) do
             if prefab == item.prefab then
@@ -104,16 +104,8 @@ local function  DoPickTarget(inst)
     end
 end
 
-local function HasPickTarget(inst)
-    local target = FindEntity(inst, PICK_TARGET_DIST, function(item) return item.components.pickable and item.components.pickable:CanBePicked() end)
-    return target ~= nil and KeepChoppingAction(inst)
-end
-
-
 local MAX_CHASE_TIME = 10
 local MAX_CHASE_DIST = 30
-
-
 
 local function GetWanderDistFn(inst)
     return MAX_WANDER_DIST

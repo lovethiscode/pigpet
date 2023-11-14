@@ -38,6 +38,8 @@ GLOBAL.Pigpet.growth = {}
 
 GLOBAL.Pigpet.notPickPrefeb = {
     "heatrock",
+    "spoiled_food",
+    "wetgoop"
 }
 
 GLOBAL.Pigpet.notPickTag = {
