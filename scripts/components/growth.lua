@@ -23,10 +23,17 @@ local Growth = Class(function(self, inst)
     --当前升级所需经验值
     self.currentmaxexp = 100
     --启动一个循环定时任务
-    self.inst:DoPeriodicTask(5, function() 
+    self.checkTask = self.inst:DoPeriodicTask(5, function() 
         self:CheckHealth()
         self:AddExp(Pigpet.growth.time_exp)
      end)
+     local player = GetPlayer()
+     --监听player死亡事件
+    player:ListenForEvent("death", function() 
+        --停止定时任务
+        self.checkTask:Cancel()
+        self.checkTask = nil
+    end)
 end)
 
 function Growth:CheckHealth()
