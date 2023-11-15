@@ -38,18 +38,25 @@ function Growth:CheckHealth()
         local player = GetPlayer()
         --判断背包中是否有宠物食物
         local food = player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK).components.container:FindItem(function(item) 
-            if item.prefab == "petfood" then
+            if item.prefab == "pigpetfood" then
                 return true
             end
         end)
         if not food then
-            food = player.components.inventory:FindItem(function(item) return item.prefab == "petfood" end)
+            food = player.components.inventory:FindItem(function(item) return item.prefab == "pigpetfood" end)
         end
         if food then
             --如果有宠物食物，吃掉宠物食物，增加宠物生命值
             self.inst.components.health.currenthealth = self.inst.components.health.currenthealth + food.components.edible.healthvalue
-            --吃掉宠物食物
-            food:Remove()
+            --获取当前堆叠的个数
+            local size = food.components.stackable:StackSize()
+            if size > 1 then
+                --如果堆叠的个数大于1，减少一个堆叠
+                food.components.stackable:SetStackSize(size - 1)
+            else
+             --吃掉宠物食物
+             food:Remove()
+            end
         else
             --随机一个概率，说一句话
             local rand = math.random(1, 100)
