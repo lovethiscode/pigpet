@@ -39,8 +39,19 @@ local CookBook = Class(Screen, function(self)
 
     self:Refresh()
     self:SetupUpDownButton()
+    self:SetupCloseButton()
   end)
   
+function CookBook:SetupCloseButton()
+  self.closebtn = self.proot:AddChild(ImageButton("images/ui.xml", "button_small.tex", "button_small_over.tex", "button_small_disabled.tex"))
+  self.closebtn:SetPosition(30, -250)
+  self.closebtn:SetText("关闭")
+  self.closebtn:SetFont(BUTTONFONT)
+  self.closebtn:SetOnClick(function()
+    TheFrontEnd:PopScreen(self)
+  end)
+end
+
   function CookBook:SetupUpDownButton()
     self.downbutton = self.proot:AddChild(ImageButton(HUD_ATLAS, "craft_end_normal.tex", "craft_end_normal_mouseover.tex", "craft_end_normal_disabled.tex"))
     self.downbutton:SetPosition(0, -250)
