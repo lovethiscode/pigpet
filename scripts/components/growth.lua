@@ -23,9 +23,43 @@ local Growth = Class(function(self, inst)
     --当前升级所需经验值
     self.currentmaxexp = 100
     --启动一个循环定时任务
-    self.inst:DoPeriodicTask(5, function() self:AddExp(Pigpet.growth.time_exp) end)
+    self.inst:DoPeriodicTask(5, function() 
+        self:CheckHealth()
+        self:AddExp(Pigpet.growth.time_exp)
+     end)
 end)
 
+function Growth:CheckHealth()
+    --获取当前生命值
+    local currenthealth = self.inst.components.health.currenthealth
+    --如果当前生命值小于最大生命值的一半
+    if currenthealth < self.inst.components.health.maxhealth / 2 then
+        --判断玩家物品栏和背包中是否有宠物食物
+        local player = GetPlayer()
+        --判断背包中是否有宠物食物
+        local food = player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK).components.container:FindItem(function(item) 
+            if item.prefab == "petfood" then
+                return true
+            end
+        end)
+        if not food then
+            food = player.components.inventory:FindItem(function(item) return item.prefab == "petfood" end)
+        end
+        if food then
+            --如果有宠物食物，吃掉宠物食物，增加宠物生命值
+            self.inst.components.health.currenthealth = self.inst.components.health.currenthealth + food.components.edible.healthvalue
+            --吃掉宠物食物
+            food:Remove()
+        else
+            --随机一个概率，说一句话
+            local rand = math.random(1, 100)
+            if rand <= 10 then
+                self.inst.components.talker:Say("我饿了，我要吃东西")
+            end
+        end
+        
+    end
+end
 
 function Growth:GetLevel()
     return self.level
