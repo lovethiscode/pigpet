@@ -40,6 +40,7 @@ local function fn(Sim)
     inst.AnimState:SetBuild("backpack")
     inst.AnimState:PlayAnimation("anim")
     inst:AddTag("fridge")
+    inst:AddTag("backpack")
 	local minimap = inst.entity:AddMiniMapEntity()
 	minimap:SetIcon("backpack.png")
     
@@ -61,20 +62,19 @@ local function fn(Sim)
     inst:AddComponent("container")
     local slotpos = {}
     local x_offset = (-72-72-40-2)*2
-    for z = 1,5 do
-        for y = 0.5,-1.5,-1 do
-            for x = -2,2 do
-                table.insert(slotpos, Vector3(72*x +x_offset, 72*y -2-40-72-36, 0))
-            end
-        end
-        x_offset = x_offset + (72+72+40+2)*2
+
+    --3行15列
+    for x = 1, 3 do
+       for y=1, 25 do
+        table.insert(slotpos, Vector3(72*y +x_offset, 72*x -2-40-72-36, 0))
+       end
     end
 
     inst.components.container:SetNumSlots(#slotpos)      
     inst.components.container.widgetslotpos = slotpos
     inst.components.container.widgetanimbank = "ui_chest_3x3"
     -- inst.components.container.widgetanimbuild = "ui_portablecellar"
-    inst.components.container.widgetpos = Vector3(-230, -285, 0)
+    inst.components.container.widgetpos = Vector3(-340, -395, 0)
     inst.components.container.side_align_tip = 0
     inst.components.container.type = "pack"
    

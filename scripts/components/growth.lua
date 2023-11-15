@@ -43,12 +43,17 @@ function Growth:CheckHealth()
     if currenthealth < self.inst.components.health.maxhealth / 2 then
         --判断玩家物品栏和背包中是否有宠物食物
         local player = GetPlayer()
-        --判断背包中是否有宠物食物
-        local food = player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK).components.container:FindItem(function(item) 
-            if item.prefab == "pigpetfood" then
-                return true
-            end
-        end)
+        local food
+        local mybackpack = player.components.inventory:GetEquippedItem(EQUIPSLOTS.BACK)
+        if mybackpack and mybackpack.prefab == "mybackpack" then
+            --判断背包中是否有宠物食物
+            food = mybackpack.components.container:FindItem(function(item) 
+                if item.prefab == "pigpetfood" then
+                    return true
+                end
+            end)
+        end
+  
         if not food then
             food = player.components.inventory:FindItem(function(item) return item.prefab == "pigpetfood" end)
         end
