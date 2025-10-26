@@ -1,0 +1,7 @@
+1：  打开命令行窗口，也就是 cmd, 可以使用vs code。
+2：  在命令行窗口中使用命令 cd 到自己的mod 目录下. 比如  cd 'D:\WeGameApps\rail_apps\饥荒：单机版(2000013)\mods\pigpet'
+3:   执行tool 下的 autocompiler.exe, 传入 mod 目录下, 比如:
+     & 'h:\Don''t Starve Mod Tools\ds_mod_tools\build\win32\mod_tools\autocompiler.exe' 'D:\WeGameApps\rail_apps\饥荒：单机版(2000013)\mods\pigpet'
+
+执行完之后，动画， 纹理等就会自动打包，并且复制到相应的目录下
+     
