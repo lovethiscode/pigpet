@@ -48,7 +48,7 @@ local function SaveCookProduct(selectedIngredient, product, cooktime, productRes
   end
 end
 
-local function FindCookIngredient(selectedIngredient, start, n, nodes, productResult)
+local function GenerateInventoryRecipeCombinations(selectedIngredient, start, n, nodes, productResult)
     local product, cooktime = CanCookFood(selectedIngredient) 
     if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
         SaveCookProduct(selectedIngredient, product, cooktime, productResult)
@@ -61,13 +61,13 @@ local function FindCookIngredient(selectedIngredient, start, n, nodes, productRe
         if nodes[i].count > 0 then
             table.insert(selectedIngredient, nodes[i])
             nodes[i].count = nodes[i].count - 1
-            FindCookIngredient(selectedIngredient, i, n - 1, nodes, productResult)
+            GenerateInventoryRecipeCombinations(selectedIngredient, i, n - 1, nodes, productResult)
             table.remove(selectedIngredient)
             nodes[i].count = nodes[i].count + 1
         end
     end
     
-    FindCookIngredient(selectedIngredient, start + 1, n, nodes, productResult)
+    GenerateInventoryRecipeCombinations(selectedIngredient, start + 1, n, nodes, productResult)
 end
 
 local function CollectIngredient(container, result)
@@ -87,7 +87,7 @@ local function CollectIngredient(container, result)
   end
 end
 
-local function GetCookFood()
+local function GetAvailableInventoryCookpotRecipes()
     local player = GetPlayer()
     local Ingredients = {}
     --收集角色的食材
@@ -99,7 +99,7 @@ local function GetCookFood()
     
 
     local productResult = {}
-    FindCookIngredient({}, 1, SELECTED_COUNT, Ingredients, productResult)
+    GenerateInventoryRecipeCombinations({}, 1, SELECTED_COUNT, Ingredients, productResult)
     return productResult
 end
 
@@ -129,7 +129,7 @@ local function SaveCookProduct2(selectedIngredient, product, cooktime, productRe
   table.insert(productResult[product].ingredients, cooktable)
 end
 
-local function FindCookIngredient2(selectedIngredient, start, n, nodes, productResult)
+local function EnumerateRecipeCombinations(selectedIngredient, start, n, nodes, productResult)
   local product, cooktime = CanCookFood2(selectedIngredient) 
   if product and product ~= "wetgoopnil" and product ~= "wetgoop" then
       SaveCookProduct2(selectedIngredient, product, cooktime, productResult)
@@ -140,12 +140,12 @@ local function FindCookIngredient2(selectedIngredient, start, n, nodes, productR
 
   for i = start, #nodes do
       table.insert(selectedIngredient, nodes[i])
-      FindCookIngredient2(selectedIngredient, i, n - 1, nodes, productResult)
+      EnumerateRecipeCombinations(selectedIngredient, i, n - 1, nodes, productResult)
       table.remove(selectedIngredient)
   end
 end
 
-local function GetCookbook2()
+local function GenerateCookbookRecipes()
   local ingredients = {}
   for name, _ in pairs(cooking.ingredients) do
     --放入到食材列表中
@@ -156,8 +156,8 @@ local function GetCookbook2()
   end
   print("ingredients count:" .. #ingredients)
   local productResult = {}
-  FindCookIngredient2({}, 1, SELECTED_COUNT, ingredients, productResult)
+  EnumerateRecipeCombinations({}, 1, SELECTED_COUNT, ingredients, productResult)
   return productResult
 end
 
-return {GetCookFood = GetCookFood, GetCookbook2 = GetCookbook2}
+return {GetAvailableInventoryCookpotRecipes = GetAvailableInventoryCookpotRecipes, GenerateCookbookRecipes = GenerateCookbookRecipes}

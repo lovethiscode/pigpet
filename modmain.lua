@@ -80,9 +80,9 @@ GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.PIGPETFOOD = "这是给宠物吃的�
 GLOBAL.STRINGS.RECIPE_DESC.PIGPETFOOD = "可以恢复宠物生命值20点"
 
 
-modimport("showinfo.lua")
-modimport("extraequipment.lua")
-modimport("travel.lua")
+modimport("scripts/show_info.lua")
+modimport("scripts/extra_equipment.lua")
+modimport("scripts/travel.lua")
 
 --监听所有预制物的构造
 AddPrefabPostInitAny(function(inst)
@@ -153,14 +153,12 @@ end
 
 --监听世界的构造
 AddSimPostInit(function(inst)
-   CreatePigpetIfnot()
+   --CreatePigpetIfnot()
    ShowFullMap(inst)
    CreateMyBackpack()
 end)
 
-
-local cooking = GLOBAL.require("cooking")
-local cookbook = GLOBAL.require("widgets/cookbook")
+local cookbook_screen = GLOBAL.require("cookbook_screen")
 local arrange = GLOBAL.require("arrange")
 
 GLOBAL.TheInput:AddKeyHandler(function(key, down)
@@ -171,12 +169,12 @@ GLOBAL.TheInput:AddKeyHandler(function(key, down)
         -- If the hud exists, open the UI
         if screen.name:find("HUD") then
             -- We want to pass in the (clientside) player entity         
-            TheFrontEnd:PushScreen(cookbook())
+            TheFrontEnd:PushScreen(cookbook_screen())
             return true
         else
             -- If the screen is already open, close it
-            if screen.name == "CookBook" then
-                screen:Close()
+            if screen.name == "CookbookScreen" then
+                screen:OnClose()
             end
         end
     elseif key == GLOBAL.KEY_F2 and not down then   
