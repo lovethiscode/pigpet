@@ -17,9 +17,13 @@ local autoCook = require "widgets/autocook"         -- 自动烹饪工具，提�
 local VISIBLE_ROWS = 3           -- 每次可见的行数
 local ITEM_HEIGHT = 180          -- 单个 cookbook item 的纵向高度（像素）
 
+-- 每页/布局常量（保持与原布局一致）
+local COLUMNS_PER_ROW = 6
+
 -- CookbookScreen: 主界面类
 local CookbookScreen = Class(Screen, function(self)
     Screen._ctor(self, "CookbookScreen")
+    SetPause(true, "CookbookScreen")
     -- 当前已滚动到的行索引（1 开始）
     self.current_row = 1
     -- 总行数（根据内容动态计算）
@@ -89,8 +93,7 @@ function CookbookScreen:ScrollDown()
     -- 只有当还能下移（当前行 + 可视行数 <= 总行数）时才允许
     if self.current_row + VISIBLE_ROWS <= self.total_rows then
         self.current_row = self.current_row + 1
-        local x, y = self.list_root:GetPosition():Get()
-        self.list_root:SetPosition(x, y + ITEM_HEIGHT)
+        self:UpdateVisibleItems()
     end
 end
 
@@ -98,8 +101,7 @@ end
 function CookbookScreen:ScrollUp()
     if self.current_row - 1 > 0 then
         self.current_row = self.current_row - 1
-        local x, y = self.list_root:GetPosition():Get()
-        self.list_root:SetPosition(x, y - ITEM_HEIGHT)
+        self:UpdateVisibleItems()
     end
 end
 
@@ -110,50 +112,76 @@ function CookbookScreen:OnClose()
     if screen and screen.name:find("HUD") == nil then
         TheFrontEnd:PopScreen()
     end
+    SetPause(false)
     TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
 end
 
--- RefreshItems: 重新读取自动烹饪模块提供的可烹饪项并展示
--- 主要流程：
---   1) 清理上次创建的 CookBookItem（Kill）
---   2) 获取 autoCook.GetAvailableInventoryCookpotRecipes() 返回结果
---   3) 按网格布局创建新的 CookBookItem 并加入 list_root
+-- 更新当前可见的 CookBookItem（按需创建/销毁，仅创建 visible_rows 内的项）
+function CookbookScreen:UpdateVisibleItems()
+    -- 清理当前已创建的 item
+    if self.cookbook_items then
+        for _, it in ipairs(self.cookbook_items) do
+            if it and it.Kill then it:Kill() end
+        end
+    end
+    self.cookbook_items = {}
+
+    if not self.entries_array or #self.entries_array == 0 then
+        self.title:SetString("没有可烹饪的食物")
+        return
+    end
+
+    local start_row = self.current_row
+    local end_row = math.min(self.total_rows, start_row + VISIBLE_ROWS - 1)
+    local created = 0
+
+    for r = start_row, end_row do
+        for c = 1, COLUMNS_PER_ROW do
+            local idx = (r - 1) * COLUMNS_PER_ROW + c
+            local entry = self.entries_array[idx]
+            if not entry then break end
+
+            local x = (c - 3) * ITEM_HEIGHT
+            local y = (2 - (r - start_row)) * ITEM_HEIGHT - 150  -- 0..VISIBLE_ROWS-1 -> rows on screen
+            table.insert(self.cookbook_items, self.list_root:AddChild(CookBookItem(self, entry, x, y, 0.8, true)))
+            created = created + 1
+        end
+    end
+
+    self.title:SetString(created > 0 and "可烹饪的食物" or "没有可烹饪的食物")
+end
+
+-- RefreshItems: 只准备数据并计算行数，不一次性创建全部 widget
 function CookbookScreen:RefreshItems()
+    -- 取消并清理可能的创建任务（旧逻辑可能有）
+    if self._create_task then
+        self._create_task:Cancel()
+        self._create_task = nil
+    end
+
     -- 清理旧的 item（如果有）
     if self.cookbook_items then
         for _, v in ipairs(self.cookbook_items) do
-            v:Kill()
+            if v and v.Kill then v:Kill() end
         end
     end
-
-    -- 从自动烹饪模块获取可做菜品（结构：product -> cooktable）
-    local product_result = autoCook.GetAvailableInventoryCookpotRecipes()
     self.cookbook_items = {}
-    self.current_row = 1
-    self.total_rows = 1
-    local column = 1
-    local has_any = false
 
-    -- 遍历 product_result，按多列布局创建 CookBookItem
-    for _, v in pairs(product_result) do
-        -- 计算位置：横向以 ITEM_HEIGHT 为间隔，纵向以 total_rows 累进
-        local x = (column - 3) * ITEM_HEIGHT
-        local y = (2 - self.total_rows) * ITEM_HEIGHT
-        table.insert(self.cookbook_items, self.list_root:AddChild(CookBookItem(self, v, x, y, 0.8)))
-
-        column = column + 1
-        if column > 6 then
-            column = 1
-            self.total_rows = self.total_rows + 1
-        end
-        has_any = true
+    -- 获取数据（product -> cooktable），然后转数组以便按索引分页
+    self.entries_array = autoCook.GetAvailableInventoryCookpotRecipes()
+    local cookbook_recipes = autoCook.GenerateCookbookRecipes()
+    -- 将cookbook_recipes 合并到 entries_array
+    for _, v in pairs(cookbook_recipes) do
+        table.insert(self.entries_array, v)
     end
 
-    if not has_any then
-        self.title:SetString("没有可烹饪的食物")
-    else
-        self.title:SetString("可烹饪的食物")
-    end
+    -- 计算总行数（每行 COLUMNS_PER_ROW 项）
+    local total_items = #self.entries_array
+    self.total_rows = math.max(1, math.ceil(total_items / COLUMNS_PER_ROW))
+    self.current_row = math.min(self.current_row or 1, self.total_rows)
+
+    -- 创建当前可见页的项（按需创建）
+    self:UpdateVisibleItems()
 end
 
 return CookbookScreen

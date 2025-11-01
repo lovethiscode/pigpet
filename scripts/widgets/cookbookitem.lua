@@ -57,16 +57,17 @@ local CookbookItem = Class(Widget, function(self, cookbook, ingredient, pos_x, p
         local ingredient_image = self.contents:AddChild(Image(resolvefilepath("images/inventoryimages.xml"), selected_item.inst.prefab .. ".tex"))
         ingredient_image:SetPosition(ingredient_start_x + (i - 1) * ingredient_spacing, -70, 0)
     end
-
-    -- 烹饪按钮：点击时尝试把选中的食材放入附近空闲的烹饪锅并开始烹饪
-    self.cook_button = self.contents:AddChild(ImageButton("images/ui.xml", "button_small.tex", "button_small_over.tex", "button_small_disabled.tex"))
-    self.cook_button:SetPosition(0, -280)
-    self.cook_button:SetScale(scale)
-    self.cook_button:SetText("烹饪")
-    self.cook_button:SetFont(BUTTONFONT)
-    self.cook_button:SetOnClick(function()
-        self:Cook()
-    end)
+    if ingredient.can_cook then
+        -- 烹饪按钮：点击时尝试把选中的食材放入附近空闲的烹饪锅并开始烹饪
+        self.cook_button = self.contents:AddChild(ImageButton("images/ui.xml", "button_small.tex", "button_small_over.tex", "button_small_disabled.tex"))
+        self.cook_button:SetPosition(0, -280)
+        self.cook_button:SetScale(scale)
+        self.cook_button:SetText("烹饪")
+        self.cook_button:SetFont(BUTTONFONT)
+        self.cook_button:SetOnClick(function()
+            self:Cook()
+        end)
+    end
 end)
 
 -- 辅助函数：判断给定实体是否为“可用的烹饪锅”
