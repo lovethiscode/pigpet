@@ -166,13 +166,36 @@ function CookbookScreen:RefreshItems()
         end
     end
     self.cookbook_items = {}
+    self.entries_array = {}
 
     -- 获取数据（product -> cooktable），然后转数组以便按索引分页
-    self.entries_array = autoCook.GetAvailableInventoryCookpotRecipes()
-    local cookbook_recipes = autoCook.GenerateCookbookRecipes()
-    -- 将cookbook_recipes 合并到 entries_array
-    for _, v in pairs(cookbook_recipes) do
-        table.insert(self.entries_array, v)
+    local inventory_recipes = autoCook.GetAvailableInventoryCookpotRecipes()
+    -- 太多了现不显示了
+    local cookbook_recipes = {} --autoCook.GenerateCookbookRecipes()
+    for product, v in pairs(inventory_recipes) do
+        for _, detail in ipairs(v.ingredients_list) do
+            local entry = {
+                -- 实物的信息
+                recipe = v.recipe,
+                -- 配方
+                selected_ingredient = detail.selected_ingredient,
+                can_cook = detail.can_cook,
+            }
+            table.insert(self.entries_array, entry)
+        end
+    end
+
+    for product, v in pairs(cookbook_recipes) do
+        for _, detail in ipairs(v.ingredients_list) do
+            local entry = {
+                -- 实物的信息
+                recipe = v.recipe,
+                -- 配方
+                selected_ingredient = detail.selected_ingredient,
+                can_cook = detail.can_cook,
+            }
+            table.insert(self.entries_array, entry)
+        end
     end
 
     -- 计算总行数（每行 COLUMNS_PER_ROW 项）

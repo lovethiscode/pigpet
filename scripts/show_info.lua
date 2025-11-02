@@ -14,179 +14,18 @@ local function round_decimal(num, idp)
     return GLOBAL.tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
 
--- 鼠标悬停扩展信息（widgets/hoverer 实例构造后执行）
--- 把更多的信息拼接到 hoverer 的文本中，显示实体 prefab、travelable 名称、血量、装备属性、烹饪/成长时间等
-AddClassPostConstruct("widgets/hoverer", function(self)
-    local old_SetString = self.text.SetString
-    -- 覆写内部 SetString，追加目标实体信息
-    self.text.SetString = function(text, str)
-        local target = GLOBAL.TheInput:GetWorldEntityUnderMouse()
-        if target then
-            -- 基本信息：prefab 代码
-            if target.prefab then
-                str = str .. "\n代码: " .. target.prefab
-            end
-            -- travelable 组件：显示可旅行目标的名称（如果存在）
-            if target.components and target.components.travelable then
-                if target.components.travelable.name then
-                    str = str .. "\n" .. tostring(target.components.travelable.name)
-                end
-            end
-
-            -- 如果目标有组件，逐项拼接额外信息（带兼容性判断）
-            if target.components then
-                -- 生命值（实时）
-                if target.components.health then
-                    str = str .. "\n" .. math.ceil(target.components.health.currenthealth * 10) / 10 .. "/" .. math.ceil(target.components.health.maxhealth * 10) / 10
-                end
-
-                -- 攻击力（若存在 combat.defaultdamage）
-                if target.components.combat and target.components.combat.defaultdamage and target.components.combat.defaultdamage > 0 then
-                    str = str .. "\n攻击力: " .. target.components.combat.defaultdamage
-                end
-
-                -- winterometer（温度计）显示当前温度（示例）
-                if target.prefab == "winterometer" then
-                    local sm = GLOBAL.GetSeasonManager()
-                    local temp = sm and sm:GetCurrentTemperature() or 30
-                    local high_temp = TUNING.OVERHEAT_TEMP
-                    local low_temp = 0
-                    temp = math.min(math.max(low_temp, temp), high_temp)
-                    str = str .. "\n温度: " .. tostring(math.floor(temp)) .. "\176C"
-                end
-
-                -- pigpet 状态（示例，基于全局变量）
-                if target.prefab == "pigpet" and GLOBAL.Pigpet then
-                    if GLOBAL.Pigpet.Status == 0 then
-                        str = str .. "\n状态: 攻击"
-                    elseif GLOBAL.Pigpet.Status == 1 then
-                        str = str .. "\n状态: 跟随"
-                    end
-                end
-
-                -- 装备相关：手持/头部/身体物品的防御与耐久
-                if target.components.inventory then
-                    -- 头部
-                    local headitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HEAD)
-                    if headitem and headitem.components.armor then
-                        str = str .. "\n头部防御: " .. headitem.components.armor.absorb_percent * 100 .. "%"
-                        str = str .. " 耐久: " .. math.floor(headitem.components.armor:GetPercent() * 100) .. "%"
-                    end
-                    -- 身体
-                    local bodyitem = target.components.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BODY)
-                    if bodyitem and bodyitem.components.armor then
-                        str = str .. "\n身体防御: " .. bodyitem.components.armor.absorb_percent * 100 .. "%"
-                        str = str .. " 耐久: " .. math.floor(bodyitem.components.armor:GetPercent() * 100) .. "%"
-                    end
-                end
-
-                -- 驯养相关（domesticatable 组件）：饥饿、顺从、驯服百分比与倾向
-                if target.components.domesticatable then
-                    local dom = target.components.domesticatable
-                    if dom.GetDomestication and dom.GetObedience then
-                        local hunger = target.components.hunger and target.components.hunger.current or 0
-                        local obedience = dom:GetObedience()
-                        local domestication = dom:GetDomestication()
-                        if domestication and domestication ~= 0 then
-                            str = str .. "\n饥饿: " .. round_decimal(hunger) .. "\n顺从: " .. round_decimal(obedience * 100, 0) .. "%" .. "\n驯服: " .. round_decimal(domestication * 100, 0) .. "%"
-                        end
-                        -- 倾向（tendencies）
-                        if dom.tendencies then
-                            for k, v in pairs(dom.tendencies) do
-                                local ten = "默认"
-                                if k == GLOBAL.TENDENCY.ORNERY then ten = "战牛"
-                                elseif k == GLOBAL.TENDENCY.RIDER then ten = "行牛"
-                                elseif k == GLOBAL.TENDENCY.PUDGY then ten = "肥牛" end
-                                str = str .. string.format("\n %s:%.2f", ten, v)
-                            end
-                        end
-                    end
-                end
-
-                -- 可采集生长时间（pickable / hackable / deployable / growable）
-                if target.components.pickable and target.components.pickable.targettime then
-                    str = str .. "\n距离成长: " .. tostring(math.ceil((target.components.pickable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
-                end
-                if target.components.hackable and target.components.hackable.targettime then
-                    str = str .. "\n距离成长: " .. tostring(math.ceil((target.components.hackable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
-                end
-                if target.components.deployable and target.growtime then
-                    str = str .. "\n树苗: " .. tostring(math.ceil((target.growtime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
-                end
-                if target.components.growable and target.components.growable.targettime then
-                    str = str .. "\n下一阶段: " .. tostring(math.ceil((target.components.growable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
-                end
-
-                -- 干燥架（dryer）剩余时间
-                if target.components.dryer and target.components.dryer:IsDrying() and target.components.dryer.GetTimeToDry then
-                    str = str .. "\n剩余: " .. round_decimal((target.components.dryer:GetTimeToDry() / TUNING.TOTAL_DAY_TIME) + 0.1, 1) .. " 天"
-                end
-
-                -- 烹饪（stewer）剩余时间与食物名
-                if target.components.stewer and target.components.stewer.GetTimeToCook and target.components.stewer:GetTimeToCook() > 0 then
-                    local tm = math.ceil((target.components.stewer.targettime - GLOBAL.GetTime()), 0)
-                    local cookname = GLOBAL.STRINGS.NAMES and GLOBAL.STRINGS.NAMES[string.upper(target.components.stewer.product)] or tostring(target.components.stewer.product)
-                    if tm < 0 then tm = 0 end
-                    str = str .. "\n正在烹饪: " .. tostring(cookname) .. "\n剩余时间(秒): " .. tm
-                end
-
-                -- 农作物进度与产品
-                if target.components.crop and target.components.crop.growthpercent then
-                    if target.components.crop.product_prefab then
-                        str = str .. "\n" .. (GLOBAL.STRINGS.NAMES and GLOBAL.STRINGS.NAMES[string.upper(target.components.crop.product_prefab)] or target.components.crop.product_prefab)
-                    end
-                    if target.components.crop.growthpercent < 1 then
-                        str = str .. "\n距离成长: " .. math.ceil(target.components.crop.growthpercent * 1000) / 10 .. "%"
-                    end
-                end
-
-                -- 燃料（fueled）显示百分比（排除 inventory target）
-                if target.components.fueled and not target.components.inventorytarget then
-                    str = str .. "\n燃料: " .. math.ceil((target.components.fueled.currentfuel / target.components.fueled.maxfuel) * 100) .. "%"
-                end
-
-                -- 忠诚（follower）
-                if target.components.follower and target.components.follower.maxfollowtime then
-                    local mx = target.components.follower.maxfollowtime
-                    local cur = math.floor(target.components.follower:GetLoyaltyPercent() * mx + 0.5)
-                    if cur > 0 then
-                        str = str .. "\n忠诚: " .. cur
-                    end
-                end
-
-                -- 船（boathealth）
-                if target.components.boathealth then
-                    str = str .. "\n船: " .. math.ceil(target.components.boathealth.currenthealth) .. "/" .. target.components.boathealth.maxhealth
-                end
-
-                -- 耐久（finiteuses）
-                if target.components.finiteuses then
-                    if target.components.finiteuses.consumption then
-                        local use = 1
-                        for k, v in pairs(target.components.finiteuses.consumption) do use = v end
-                        str = str .. "\n耐久: " .. math.floor(target.components.finiteuses.current / use + .5) .. "/" .. math.floor(target.components.finiteuses.total / use + .5)
-                    else
-                        str = str .. "\n耐久: " .. target.components.finiteuses.current .. "/" .. target.components.finiteuses.total
-                    end
-                end
-
-                -- workable 动作 id
-                if target.components.workable then
-                    local action = target.components.workable:GetWorkAction()
-                    if action and action.id then
-                        str = str .. "\n动作: " .. tostring(action.id)
-                    end
-                end
-
-                -- 经验/成长（growth 组件）
-                if target.components.growth then
-                    str = str .. "\n等级:" .. target.components.growth:GetLevel() .. " (经验: " .. target.components.growth:GetCurrentExp() .. "/" .. target.components.growth:GetCurrentMaxExp() .. ")"
-                end
-            end
+local function GetIngredient(prefab)
+    local all_receipes = AllRecipes or GLOBAL.GetAllRecipes()
+    local receipe = all_receipes[prefab]
+    if receipe then
+        local describe = "\n材料:"
+        for _, ingredient in ipairs(receipe.ingredients) do
+            describe = describe .. (GLOBAL.STRINGS.NAMES[GLOBAL.string.upper(ingredient.type)] or "无描述") .. " x" .. ingredient.amount .. " "
         end
-        return old_SetString(text, str)
+        return describe
     end
-end)
+    return nil
+end
 
 -- 以下为物品栏（inventory）提示扩展相关函数
 local function round_nearest(n)
@@ -206,6 +45,17 @@ local function GetItemDescription(item)
     -- 显示 prefab 代码（识别用）
     if item.prefab then
         str = str .. "\n代码: " .. tostring(item.prefab)
+    end
+    local ingred = GetIngredient(item.prefab)
+    if ingred then
+        str = str .. ingred
+    end
+
+    -- travelable 组件：显示可旅行目标的名称（如果存在）
+    if ic.travelable then
+        if ic.travelable.name then
+            str = str .. "\n" .. tostring(ic.travelable.name)
+        end
     end
 
     -- 食物属性（edible）
@@ -229,6 +79,26 @@ local function GetItemDescription(item)
         str = str .. "\n伤害: " .. math.ceil(ic.weapon.damage * 10) / 10
         if ic.weapon.hitrange then
             str = str .. "\n范围: " .. ic.weapon.hitrange
+        end
+    end
+
+    -- winterometer（温度计）显示当前温度（示例）
+    if item.prefab == "winterometer" then
+        local sm = GLOBAL.GetSeasonManager()
+        local temp = sm and sm:GetCurrentTemperature() or 30
+        local low_temp = 0
+        temp = math.min(math.max(low_temp, temp), 200)
+        str = str .. "\n温度: " .. tostring(math.floor(temp)) .. "\176C"
+    end
+    
+
+
+     -- pigpet 状态（示例，基于全局变量）
+    if item.prefab == "pigpet" and GLOBAL.Pigpet then
+        if GLOBAL.Pigpet.Status == 0 then
+            str = str .. "\n状态: 攻击"
+        elseif GLOBAL.Pigpet.Status == 1 then
+            str = str .. "\n状态: 跟随"
         end
     end
 
@@ -268,6 +138,23 @@ local function GetItemDescription(item)
         str = str .. "\n距离腐烂: " .. perishremainingtime .. " 天"
     end
 
+    -- 装备相关：手持/头部/身体物品的防御与耐久
+    if ic.inventory then
+        -- 头部
+        local headitem = ic.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HEAD)
+        if headitem and headitem.components.armor then
+            str = str .. "\n头部防御: " .. headitem.components.armor.absorb_percent * 100 .. "%"
+            str = str .. " 耐久: " .. math.floor(headitem.components.armor:GetPercent() * 100) .. "%"
+        end
+        -- 身体
+        local bodyitem = ic.inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.BODY)
+        if bodyitem and bodyitem.components.armor then
+            str = str .. "\n身体防御: " .. bodyitem.components.armor.absorb_percent * 100 .. "%"
+            str = str .. " 耐久: " .. math.floor(bodyitem.components.armor:GetPercent() * 100) .. "%"
+        end
+    end
+
+
     -- 格子内生物的 hp（若 item 本身有 health）
     if ic.health then
         str = str .. "\n" .. ic.health.currenthealth .. "/" .. ic.health.maxhealth
@@ -278,6 +165,11 @@ local function GetItemDescription(item)
         str = str .. "\n生命: +" .. ic.healer.health
     end
 
+    -- 攻击力（若存在 combat.defaultdamage）
+    if ic.combat and ic.combat.defaultdamage and ic.combat.defaultdamage > 0 then
+        str = str .. "\n攻击力: " .. ic.combat.defaultdamage
+    end
+    
     -- 装备耐久与防御（armor）
     if ic.armor then
         str = str .. "\n防御: " .. ic.armor.absorb_percent * 100 .. "%("
@@ -294,20 +186,29 @@ local function GetItemDescription(item)
         str = str .. "\n温度: " .. math.floor(ic.temperature.current * 10) / 10 .. "\176C"
     end
 
-    -- 隔热/保暖（insulator），分别显示 summer/winter 类型
-    if ic.insulator and ic.insulator.insulation then
-        local insulation = round_nearest(ic.insulator.insulation)
-        if insulation and string.lower(ic.insulator.type) == "summer" then
-            str = str .. "\n隔热: " .. tostring(insulation)
-        end
-        if insulation and string.lower(ic.insulator.type) == "winter" then
-            str = str .. "\n保暖: " .. tostring(insulation)
-        end
-    end
-
     -- 防水效果（waterproofer）
     if ic.waterproofer and ic.waterproofer.effectiveness ~= 0 then
         str = str .. "\n防水: " .. ic.waterproofer.effectiveness * 100 .. "%"
+    end
+
+
+    -- 可采集生长时间（pickable / hackable / deployable / growable）
+    if ic.pickable and ic.pickable.targettime then
+        str = str .. "\n距离成长: " .. tostring(math.ceil((ic.pickable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
+    end
+    if ic.hackable and ic.hackable.targettime then
+        str = str .. "\n距离成长: " .. tostring(math.ceil((ic.hackable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
+    end
+    if ic.deployable and ic.deployable.growtime then
+        str = str .. "\n树苗: " .. tostring(math.ceil((ic.deployable.growtime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
+    end
+    if ic.growable and ic.growable.targettime then
+        str = str .. "\n下一阶段: " .. tostring(math.ceil((ic.growable.targettime - GLOBAL.GetTime()) / 48) / 10) .. " 天"
+    end
+
+    -- 干燥架（dryer）剩余时间
+    if ic.dryer and ic.dryer:IsDrying() and ic.dryer.GetTimeToDry then
+        str = str .. "\n剩余: " .. round_decimal((ic.dryer:GetTimeToDry() / TUNING.TOTAL_DAY_TIME) + 0.1, 1) .. " 天"
     end
 
     -- 精神回复（dapperness）
@@ -327,6 +228,24 @@ local function GetItemDescription(item)
         str = str .. "\n移速: " .. added_speed .. "%"
     end
 
+    -- workable 动作 id
+    if ic.workable then
+        local action = ic.workable:GetWorkAction()
+        if action and action.id then
+            str = str .. "\n动作: " .. GLOBAL.STRINGS.ACTIONS[string.upper(action.id)]
+        end
+    end
+
+    -- 经验/成长（growth 组件）
+    if ic.growth then
+        str = str .. "\n等级:" .. ic.growth:GetLevel() .. " (经验: " .. ic.growth:GetCurrentExp() .. "/" .. ic.growth:GetCurrentMaxExp() .. ")"
+    end
+
+    -- 船（boathealth）
+    if ic.boathealth then
+        str = str .. "\n船: " .. math.ceil(ic..boathealth.currenthealth) .. "/" .. ic..boathealth.maxhealth
+    end
+
     -- 爆炸（explosive）
     if item.components.explosive then
         str = str .. "\n爆炸伤害: " .. item.components.explosive.explosivedamage .. "\n爆炸范围: " .. item.components.explosive.explosiverange
@@ -343,6 +262,65 @@ local function GetItemDescription(item)
         end
     end
 
+    -- 农作物进度与产品
+    if ic.crop and ic.crop.growthpercent then
+        if ic.crop.product_prefab then
+            str = str .. "\n" .. (GLOBAL.STRINGS.NAMES and GLOBAL.STRINGS.NAMES[string.upper(ic.crop.product_prefab)] or ic.crop.product_prefab)
+        end
+        if ic.crop.growthpercent < 1 then
+            str = str .. "\n距离成长: " .. math.ceil(ic.crop.growthpercent * 1000) / 10 .. "%"
+        end
+    end
+
+    -- pigpet 状态（示例，基于全局变量）
+    if item.prefab == "pigpet" and GLOBAL.Pigpet then
+        if GLOBAL.Pigpet.Status == 0 then
+            str = str .. "\n状态: 攻击"
+        elseif GLOBAL.Pigpet.Status == 1 then
+            str = str .. "\n状态: 跟随"
+        end
+    end
+
+    -- 忠诚（follower）
+    if ic.follower and ic.follower.maxfollowtime then
+        local mx = ic.follower.maxfollowtime
+        local cur = math.floor(ic.follower:GetLoyaltyPercent() * mx + 0.5)
+        if cur > 0 then
+            str = str .. "\n忠诚: " .. cur
+        end
+    end
+    
+    -- 驯养相关（domesticatable 组件）：饥饿、顺从、驯服百分比与倾向
+    if ic.domesticatable then
+        local dom = ic.domesticatable
+        if dom.GetDomestication and dom.GetObedience then
+            local hunger = ic.hunger and ic.hunger.current or 0
+            local obedience = dom:GetObedience()
+            local domestication = dom:GetDomestication()
+            if domestication and domestication ~= 0 then
+                str = str .. "\n饥饿: " .. round_decimal(hunger) .. "\n顺从: " .. round_decimal(obedience * 100, 0) .. "%" .. "\n驯服: " .. round_decimal(domestication * 100, 0) .. "%"
+            end
+            -- 倾向（tendencies）
+            if dom.tendencies then
+                for k, v in pairs(dom.tendencies) do
+                    local ten = "默认"
+                    if k == GLOBAL.TENDENCY.ORNERY then ten = "战牛"
+                    elseif k == GLOBAL.TENDENCY.RIDER then ten = "行牛"
+                    elseif k == GLOBAL.TENDENCY.PUDGY then ten = "肥牛" end
+                    str = str .. string.format("\n %s:%.2f", ten, v)
+                end
+            end
+        end
+    end
+
+    -- 烹饪（stewer）剩余时间与食物名
+    if ic.stewer and ic.stewer.GetTimeToCook and ic.stewer:GetTimeToCook() > 0 then
+        local tm = math.ceil((ic.stewer.targettime - GLOBAL.GetTime()), 0)
+        local cookname = GLOBAL.STRINGS.NAMES and GLOBAL.STRINGS.NAMES[string.upper(ic.stewer.product)] or tostring(ic.stewer.product)
+        if tm < 0 then tm = 0 end
+        str = str .. "\n正在烹饪: " .. tostring(cookname) .. "\n剩余时间(秒): " .. tm
+    end
+
     -- 燃料显示（fueled / fuel）
     if ic.fueled then
         str = str .. "\n剩余燃料:" .. tostring(ic.fueled.currentfuel) .. "/" .. tostring(ic.fueled.fueltype)
@@ -356,6 +334,7 @@ local function GetItemDescription(item)
         str = str .. "\n火山献祭: " .. tostring(ic.appeasement.appeasementvalue)
     end
 
+    
     -- 打包物品（unwrappable）：列出包裹内的物品名与数量
     if ic.unwrappable then
         local packageprefabname = ""
@@ -371,6 +350,22 @@ local function GetItemDescription(item)
 
     return str
 end
+
+
+
+-- 鼠标悬停扩展信息（widgets/hoverer 实例构造后执行）
+-- 把更多的信息拼接到 hoverer 的文本中，显示实体 prefab、travelable 名称、血量、装备属性、烹饪/成长时间等
+AddClassPostConstruct("widgets/hoverer", function(self)
+    local old_SetString = self.text.SetString
+    -- 覆写内部 SetString，追加目标实体信息
+    self.text.SetString = function(text, str)
+        local target = GLOBAL.TheInput:GetWorldEntityUnderMouse()
+        if target then
+           str = str .. GetItemDescription(target)
+        end
+        return old_SetString(text, str)
+    end
+end)
 
 -- 扩展 inventorybar 的光标提示（把 GetItemDescription 的内容附加到光标提示中）
 local Inv = GLOBAL.require "widgets/inventorybar"

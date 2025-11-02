@@ -8,7 +8,7 @@ local Image = require "widgets/image"
 -- CookbookItem 类：表示食谱列表中的一项条目
 -- 参数：
 --   cookbook: 上层食谱界面控制器（用于刷新等回调）
---   ingredient: 包含 recipe 和 selectedIngredient 的表（由自动烹饪逻辑生成）
+--   ingredient: 包含 recipe 和 selected_ingredient 的表（由自动烹饪逻辑生成）
 --   pos_x, pos_y: 背景在父控件内的位置
 --   scale: 缩放系数
 local CookbookItem = Class(Widget, function(self, cookbook, ingredient, pos_x, pos_y, scale)
@@ -48,11 +48,11 @@ local CookbookItem = Class(Widget, function(self, cookbook, ingredient, pos_x, p
     self.health_text:SetPosition(84, 54, 0)
     self.health_text:SetString(tostring(ingredient.recipe.health))
 
-    -- 显示所需食材的图标（按照 selectedIngredient 列表）
-    local num_ingredients = #ingredient.selectedIngredient
+    -- 显示所需食材的图标（按照 selected_ingredient 列表）
+    local num_ingredients = #ingredient.selected_ingredient
     local ingredient_spacing = 70
     local ingredient_start_x = -((num_ingredients - 1) * ingredient_spacing) / 2
-    for i, selected_item in ipairs(ingredient.selectedIngredient) do
+    for i, selected_item in ipairs(ingredient.selected_ingredient) do
         -- selected_item.inst 是实际物品实体，显示对应 prefab 的图标
         local ingredient_image = self.contents:AddChild(Image(resolvefilepath("images/inventoryimages.xml"), selected_item.inst.prefab .. ".tex"))
         ingredient_image:SetPosition(ingredient_start_x + (i - 1) * ingredient_spacing, -70, 0)
@@ -143,7 +143,7 @@ function CookbookItem:Cook()
     end
 
     -- 将选中的食材逐一放入锅里
-    for _, selected_item in ipairs(self.ingredient.selectedIngredient) do
+    for _, selected_item in ipairs(self.ingredient.selected_ingredient) do
         -- 如果是堆叠的物品，取出一个单位（stackable:Get 会返回一个新实体）
         if selected_item.inst.components.stackable and selected_item.inst.components.stackable.stacksize > 1 then
             local single_unit = selected_item.inst.components.stackable:Get(1)

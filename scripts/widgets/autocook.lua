@@ -38,20 +38,22 @@ end
 
 -- 保存从玩家背包组合中首次发现的某道菜（只保存代表性一个组合）
 local function SaveInventoryRecipeResult(selected_ingredient, product, cooktime, product_result, can_cook)
-    -- 不同的配方可以会相同的产物，所以需要使用配方的唯一标识来区分
-    local key  = GetIngredientKey(selected_ingredient)
-    if not product_result[key] then
+    if not product_result[product] then
         local cook_table = {}
         cook_table.cooktime = cooktime
-        cook_table.can_cook = can_cook
-        cook_table.selectedIngredient = {}
         cook_table.recipe = cooking.recipes["cookpot"][product]
-        -- 复制配方
-        for _, item in ipairs(selected_ingredient) do
-            table.insert(cook_table.selectedIngredient, item)
-        end
-        product_result[key] = cook_table
+        cook_table.ingredients_list = {}
+        product_result[product] = cook_table
     end
+   
+    -- 复制配方
+    local tmp = {}
+    tmp.can_cook = can_cook
+    tmp.selected_ingredient = {}
+    for _, item in ipairs(selected_ingredient) do
+        table.insert(tmp.selected_ingredient, item)
+    end
+    table.insert(product_result[product].ingredients_list, tmp)
 end
 
 -- 递归枚举玩家背包（nodes 为 {inst,count} 节点）中所有可能的组合（考虑堆叠数量）
@@ -119,24 +121,6 @@ local function CollectContainerIngredients(container, result_list)
     end
 end
 
-local function GetSortedCookbookEntries(recipes_dict)
-    local arr = {}
-    for k, v in pairs(recipes_dict or {}) do
-        table.insert(arr, v)
-    end
-
-    table.sort(arr, function(a, b)
-        -- 优先使用 recipe.name 字段，否则尝试使用 product prefab 作为回退
-        local a_name = ""
-        if a.recipe and a.recipe.name then a_name = a.recipe.name end
-        local b_name = ""
-        if b.recipe and b.recipe.name then b_name = b.recipe.name end
-        return tostring(a_name) < tostring(b_name)
-    end)
-
-    return arr
-end
-
 -- 对外 API：获取玩家当前背包/装备中可在 cookpot 下锅制作的菜品（考虑物品数量）
 local function GetAvailableInventoryCookpotRecipes()
     local player = GetPlayer()
@@ -149,7 +133,7 @@ local function GetAvailableInventoryCookpotRecipes()
 
     local product_result = {}
     EnumerateInventoryRecipeCombinations({}, 1, selected_count, ingredients_list, product_result, true)
-    return GetSortedCookbookEntries(product_result)
+    return product_result
 end
 
 local cook_book_recipes = {}
@@ -183,7 +167,6 @@ local function GenerateCookbookRecipes()
   end
   
   EnumerateInventoryRecipeCombinations({}, 1, selected_count, ingredients, cook_book_recipes, false)
-  cook_book_recipes = GetSortedCookbookEntries(cook_book_recipes)
   return cook_book_recipes
 end
 
