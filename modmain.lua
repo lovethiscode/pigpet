@@ -18,6 +18,9 @@ Assets =
     Asset( "IMAGE", "images/rabbithole.tex" ),
     Asset( "ATLAS", "images/rabbithole.xml" ),
     
+    Asset( "ATLAS", "images/iai_ing_plus.xml" ),
+    Asset( "IMAGE", "images/iai_ing_plus.tex" ),
+    
 }
 
 GLOBAL.Pigpet.pickPrefeb = {
@@ -225,50 +228,77 @@ end
 
 --一键制作
 local ImageButton = GLOBAL.require "widgets/imagebutton"
-AddClassPostConstruct("widgets/recipepopup", function(self)
-    local old = self.Refresh
-	self.Refresh = function(...)
-		old(...)
-        if not self.shown then
+AddClassPostConstruct("widgets/ingredientui", function(self, ...)
+     local args = {...}
+        if #args > 0 then
+            --v:GetAtlas(imageName), imageName, v.amount, num_found, has, STRINGS.NAMES[string.upper(v.type)], owner
+            -- 先获取名字， 公国imageName 分割出.tex 前面的部分
+            local prefab = args[2]
+            local owner = args[7]
+            local dot_index = string.find(prefab, "%.tex")
+            if dot_index then
+                prefab = string.sub(prefab, 1, dot_index - 1)
+            end
+            -- 获取配方
+            local all_receipes = AllRecipes or GLOBAL.GetAllRecipes()
+            local receipe = all_receipes[prefab]
+            if receipe == nil then
             return
         end
-        local recipe = self.recipe
-        local owner = self.owner
-        if self.doAction then
-            --先隐藏
-            self.doAction:Hide()
-        end
-
-        for k,v in pairs(recipe.ingredients) do
-            --判断是否是需要合成的物品
-            local slotrecipe = GLOBAL.Recipes[v.type]
-            if slotrecipe then
-                local knows = owner.components.builder:KnowsRecipe(v.type)
-                local can_build = owner.components.builder:CanBuild(v.type)
-                local has, num_found = owner.components.inventory:Has(v.type, GLOBAL.RoundUp(v.amount * owner.components.builder.ingredientmod), true)
-                print("需要：" .. tostring(k) .. " :" .. v.type .. " " .. v.amount .. " knows:" .. tostring(knows) .. " can_build:" .. tostring(can_build) .. " has:" .. tostring(has).. " num_found:" .. tostring(num_found))
-                --如果知道配方，材料充足，并且不够
-
-
-                if knows and can_build and not has and not self.doAction then                
-                    self.doAction = self.contents:AddChild(ImageButton("images/ui.xml", "button_small.tex", "button_small_over.tex", "button_small_disabled.tex"))
-                    self.doAction:SetPosition(220, 140)
-                    self.doAction:SetText("材料")
-                    self.doAction:MoveToFront()
-                    self.doAction:SetOnClick(function()
-                        GLOBAL.DoRecipeClick(self.owner, self.doAction.slotrecipe)
-                    end)
-                end
-
-                if knows and can_build and not has then
-                    self.doAction.slotrecipe = slotrecipe
-                    self.doAction:Show()
-                end
-                if not knows and can_build then
-                    --说话
-                    owner.components.talker:Say(GLOBAL.STRINGS.NAMES[string.upper(slotrecipe.name)] .. "(需要制作一个原型)")
+            -- 如果需要多个材料的才需要添加按钮
+            local need_add = true
+            local show_ingredients = true
+            if #receipe.ingredients == 1 and receipe.ingredients[1].amount ==1 then
+                need_add = false
+                show_ingredients = false
+            end
+            if need_add then
+                for _, ingredient in ipairs(receipe.ingredients) do
+                    -- 判断材料是否足够
+                    if not owner.components.inventory:Has(ingredient.type, GLOBAL.RoundUp(ingredient.amount * owner.components.builder.ingredientmod), true) then
+                        need_add = false
+                        break
+                    end
                 end
             end
+
+            if need_add then
+                self.doAction = self:AddChild(ImageButton("images/iai_ing_plus.xml", "iai_ing_plus.tex", "iai_ing_plus.tex", "iai_ing_plus.tex"))
+                self.doAction:SetPosition(-20, 20)
+                    self.doAction:MoveToFront()
+                    self.doAction:SetOnClick(function()
+                    GLOBAL.DoRecipeClick(owner, GLOBAL.Recipes[prefab])
+                    end)
+                end
+            if show_ingredients then
+                --显示所有材料
+                print("显示所有材料：")
+                local ingredient_str = ""
+                for _, ingredient in ipairs(receipe.ingredients) do
+                    if ingredient.type ~= nil then             
+                        print("材料类型：" .. ingredient.type .. " 数量：" .. tostring(ingredient.amount))
+                        ingredient_str = ingredient_str .. tostring(ingredient.amount) .. "x" .. GLOBAL.STRINGS.NAMES[string.upper(ingredient.type)] .. " "
+                end
+                end
+                self:SetTooltip(ingredient_str)
+            end
         end
+end)
+
+
+
+
+local TopBanner = GLOBAL.require "widgets/top_banner"
+
+AddClassPostConstruct("widgets/controls", function(self)
+    -- 如果已存在则移除旧的
+    if self.top_banner and self.top_banner.Kill then
+        self.top_banner:Kill()
+        self.top_banner = nil
     end
+
+    -- 创建并添加 banner（初始文本）
+    self.top_banner = self.sidepanel:AddChild(TopBanner(""))
+    self.top_banner:SetPosition(-300,0,0)
+    -- 暴露到 self 以便其它代码更新文本： self.top_banner:SetString("新的文本")
 end)
