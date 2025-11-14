@@ -40,8 +40,37 @@ local TravelItem = Class(Widget, function(self, homesign, isCurrent, traveller, 
     self.name:SetVAlign(ANCHOR_MIDDLE)
     self.name:SetHAlign(ANCHOR_LEFT)
     self.name:SetPosition(0, 10, 0)
+    self.name:SetAllowClipboardPaste(true)
     -- 指定显示区域以限制文本换行
     self.name:SetRegionSize(300, 40)
+
+    self.name.OnRawKey = function(_, key, down)
+           if not down and key == KEY_BACKSPACE then
+            local te = _
+
+            -- 尝试读取编辑缓冲（优先 GetLineEditString，再退回 GetString）
+            local ok, s = pcall(function() return te.GetLineEditString and te:GetLineEditString() end)
+            if not ok or type(s) ~= "string" then
+                ok, s = pcall(function() return te.GetString and te:GetString() end)
+            end
+
+            if type(s) == "string" and #s > 0 then
+                -- 删除最后一个字符并写回
+                local new_s = string.sub(s, 1, #s - 1)
+                pcall(function()
+                    if type(te.SetLineEditString) == "function" then
+                        te:SetLineEditString(new_s)
+                    elseif type(te.SetString) == "function" then
+                        te:SetString(new_s)
+                    end
+                end)
+            end
+
+            -- 已处理，阻止后续默认行为（避免重复或 IME 干扰）
+            return true
+        end
+        return TextEdit.OnRawKey(_, key, down)
+    end
 
     -- 初始化文本为 homesign 的当前名字（components.travelable.name）
     local init_name = ""
