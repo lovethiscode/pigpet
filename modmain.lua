@@ -289,6 +289,7 @@ end)
 
 
 local TopBanner = GLOBAL.require "widgets/top_banner"
+local Image = GLOBAL.require "widgets/image"
 
 AddClassPostConstruct("widgets/controls", function(self)
     -- 如果已存在则移除旧的
@@ -301,4 +302,13 @@ AddClassPostConstruct("widgets/controls", function(self)
     self.top_banner = self.sidepanel:AddChild(TopBanner(""))
     self.top_banner:SetPosition(-300,0,0)
     -- 暴露到 self 以便其它代码更新文本： self.top_banner:SetString("新的文本")
+
+
+    --self.easy_build_panel = self.bottom_root:AddChild(ImageButton(GLOBAL.resolvefilepath(GLOBAL.GetInventoryItemAtlas("axe.xml")), "axe.tex", "axe.tex", "axe.tex"))
+    --self.easy_build:SetPosition(200, -50)
+    --[[self.right_root = self:AddChild(Image("images/hud.xml", "craft_bg.tex"))
+    self.right_root:SetScaleMode(SCALEMODE_PROPORTIONAL)
+    self.right_root:SetHAnchor(ANCHOR_RIGHT)
+    self.right_root:SetVAnchor(ANCHOR_MIDDLE)
+    self.right_root:SetMaxPropUpscale(MAX_HUD_SCALE)  --]]   
 end)

@@ -334,6 +334,13 @@ local function GetItemDescription(item)
         str = str .. "\n火山献祭: " .. tostring(ic.appeasement.appeasementvalue)
     end
 
+    if ic.insulator then
+        if ic.insulator.insulation > 0 then
+            str = str .. "\n保暖: " .. tostring(round_nearest(ic.insulator.insulation))
+        elseif ic.insulator.insulation < 0 then
+            str = str .. "\n隔热: " .. tostring(round_nearest(ic.insulator.insulation))
+        end
+    end
     
     -- 打包物品（unwrappable）：列出包裹内的物品名与数量
     if ic.unwrappable then
@@ -510,21 +517,49 @@ AddComponentPostInit("health", function(Health, inst)
 end)
 
 -- 小地图图标注册：把常用资源的 minimap atlas 加入并在 prefab 初始化时设置 icon
+-- deerclops 独眼巨鹿
 local minimapAtlas = {
     "beefalo",
     "carrot_planted",
     "flint",
-    "rabbithole"
+    "rabbithole",
 }
+
 for i, v in ipairs(minimapAtlas) do
     AddMinimapAtlas("images/" .. v .. ".xml")
-end
-for i, v in ipairs(minimapAtlas) do
     AddPrefabPostInit(v, function(inst)
         local minimap = inst.entity:AddMiniMapEntity()
         minimap:SetIcon(inst.prefab .. ".tex")
     end)
 end
+
+-- 内置物品，特殊物品
+local builtin_items = {
+    "dirtpile",
+    "deerclops",
+    "bearger",
+    "dragonfly",
+    "moose",
+}
+
+for i, v in ipairs(builtin_items) do
+    --AddMinimapAtlas(GLOBAL.resolvefilepath(GLOBAL.GetInventoryItemAtlas(v .. ".tex")))
+    AddPrefabPostInit(v, function(inst)
+        local minimap = inst.entity:AddMiniMapEntity()
+        -- 不愿意找资源，就用牛的图标凑合着看吧
+        minimap:SetIcon("beefalo.tex")
+        --minimap:SetIcon(inst.prefab .. ".tex")
+        local player = GLOBAL.GetPlayer()
+        if not player then
+            return
+        end
+        if player.components.talker then
+            player.components.talker:Say("生成了:" .. GLOBAL.STRINGS.NAMES[string.upper(inst.prefab)])
+        end
+    end)
+end
+
+
 
 -- 状态栏（badge）美化：调整大小、添加背景、显示最大值（hover 时显示）
 local WidgetReq = GLOBAL.require('widgets/widget')
