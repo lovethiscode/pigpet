@@ -170,6 +170,14 @@ local function GetItemDescription(item)
         str = str .. "\n攻击力: " .. ic.combat.defaultdamage
     end
     
+    if ic.combat then
+        local attackrange = ic.combat:GetAttackRange()
+        if attackrange and attackrange > 0 then
+            str = str .. "\n攻击范围: " .. tostring(attackrange)
+        end
+    end
+
+
     -- 装备耐久与防御（armor）
     if ic.armor then
         str = str .. "\n防御: " .. ic.armor.absorb_percent * 100 .. "%("
@@ -243,7 +251,7 @@ local function GetItemDescription(item)
 
     -- 船（boathealth）
     if ic.boathealth then
-        str = str .. "\n船: " .. math.ceil(ic..boathealth.currenthealth) .. "/" .. ic..boathealth.maxhealth
+        str = str .. "\n船: " .. math.ceil(ic.boathealth.currenthealth) .. "/" .. ic.boathealth.maxhealth
     end
 
     -- 爆炸（explosive）

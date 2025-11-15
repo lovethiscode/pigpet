@@ -87,9 +87,45 @@ modimport("scripts/show_info.lua")
 modimport("scripts/extra_equipment.lua")
 modimport("scripts/travel.lua")
 
+
+
+
+local function AttachAttackRangeIndicator(inst)
+   local attackrange = inst.components.combat:GetAttackRange()
+   
+   if attackrange > 0 then  -- 仅处理有攻击范围的实体
+        local indicator = GLOBAL.CreateEntity()
+        indicator:AddTag("NOCLICK")  -- 不可点击
+        indicator:AddTag("FX")       -- 标记为特效
+        indicator.entity:AddTransform()
+        indicator.entity:AddAnimState()
+        
+        -- 设置纹理（复用firefighter_placement资源）
+        local animstate = indicator.entity:AddAnimState()
+        animstate:SetBank("firefighter_placement")
+        animstate:SetBuild("firefighter_placement")
+        animstate:PlayAnimation("idle")
+        animstate:SetOrientation(GLOBAL.ANIM_ORIENTATION.OnGround)  -- 平面显示（贴地）
+        animstate:SetLayer(GLOBAL.LAYER_BACKGROUND)       -- 显示在地面层（不遮挡实体）
+        animstate:SetSortOrder(3)                         -- 排序层级（确保可见）
+        animstate:SetMultColour(1, 0, 0, 1)             -- 绿色半透明（R:0, G:1, B:0, 透明度1）
+
+        indicator.persists = false
+        indicator.entity:SetParent(inst.entity)
+
+         -- 核心：计算缩放比例，使圆圈半径匹配攻击范围
+        local scale = attackrange / GLOBAL.TUNING.FIRE_DETECTOR_RANGE * 3  -- 计算所需缩放比例
+        indicator.Transform:SetScale(scale, scale, scale) 
+    end
+end
+
 --监听所有预制物的构造
 AddPrefabPostInitAny(function(inst)
     --如果可以堆叠
+    if not inst.components then
+        return
+    end
+
     if inst.components.stackable then
         --设置最大堆叠999
         inst.components.stackable.maxsize = 999
@@ -97,6 +133,10 @@ AddPrefabPostInitAny(function(inst)
     --如果是装备，则增加 tradable 组件
     if inst.components.equippable then
         inst:AddComponent("tradable") 
+    end
+
+    if inst.components.combat then
+        AttachAttackRangeIndicator(inst)
     end
 end)
 
@@ -272,11 +312,9 @@ AddClassPostConstruct("widgets/ingredientui", function(self, ...)
                 end
             if show_ingredients then
                 --显示所有材料
-                print("显示所有材料：")
                 local ingredient_str = ""
                 for _, ingredient in ipairs(receipe.ingredients) do
                     if ingredient.type ~= nil then             
-                        print("材料类型：" .. ingredient.type .. " 数量：" .. tostring(ingredient.amount))
                         ingredient_str = ingredient_str .. tostring(ingredient.amount) .. "x" .. GLOBAL.STRINGS.NAMES[string.upper(ingredient.type)] .. " "
                 end
                 end
